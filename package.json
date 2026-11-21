@@ -20,6 +20,9 @@
     "format:product": "pnpm --filter @picknorder/product-service format",
     "format:check:product": "pnpm --filter @picknorder/product-service format:check",
     "typecheck:product": "pnpm --filter @picknorder/product-service typecheck",
-    "test:product": "pnpm --filter @picknorder/product-service test"
+    "test:product": "pnpm --filter @picknorder/product-service test",
+    "dev:web": "pnpm --filter @picknorder/web dev",
+    "build:web": "pnpm --filter @picknorder/web build",
+    "start:web": "pnpm --filter @picknorder/web start"
   }
 }
