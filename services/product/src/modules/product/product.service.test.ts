@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { Prisma } from '@prisma/client';
 
 vi.mock('./product.repository.js', () => ({
   productRepository: {
@@ -11,34 +12,51 @@ vi.mock('./product.repository.js', () => ({
 
 import { productRepository } from './product.repository.js';
 import { productService } from './product.service.js';
+
 import { ProductNotFoundError } from '../../shared/errors/product-not-found.error.js';
 import { InsufficientStockError } from '../../shared/errors/insufficient-stock.error.js';
 
+// ---------------------------------------------
+// Test Fixtures
+// ---------------------------------------------
+
 const mockedRepository = vi.mocked(productRepository);
 
-import { Prisma } from '@prisma/client';
+const sampleCategory = {
+  id: 'cat-123',
+  name: 'Electronics',
+  slug: 'electronics',
+};
 
 const sampleProduct = {
   id: 'prod-123',
   name: 'Wireless Headphones',
   description: 'Bluetooth headphones',
-  price: new Prisma.Decimal('99.99'), // fix
-  category: 'electronics',
+  price: new Prisma.Decimal('99.99'),
+  categoryId: sampleCategory.id,
+  category: sampleCategory,
   imageUrl: null,
   stock: 10,
   isActive: true,
-  createdAt: new Date(),
-  updatedAt: new Date(),
+  createdAt: new Date('2026-01-01T00:00:00.000Z'),
+  updatedAt: new Date('2026-01-01T00:00:00.000Z'),
 };
+
+// ---------------------------------------------
+// Product Service Tests
+// ---------------------------------------------
 
 describe('productService', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.resetAllMocks();
   });
 
+  // -------------------------------------------
   // LIST PRODUCTS
+  // -------------------------------------------
+
   describe('listProducts', () => {
-    it('should return products with pagination', async () => {
+    it('should return products with pagination metadata', async () => {
       mockedRepository.findMany.mockResolvedValue({
         products: [sampleProduct],
         totalItems: 25,
@@ -52,12 +70,16 @@ describe('productService', () => {
       });
 
       expect(result.products).toHaveLength(1);
+      expect(result.products).toEqual([sampleProduct]);
+
       expect(result.pagination).toEqual({
         page: 2,
         limit: 10,
         totalItems: 25,
         totalPages: 3,
       });
+
+      expect(mockedRepository.findMany).toHaveBeenCalledOnce();
     });
 
     it('should return an empty list when no products exist', async () => {
@@ -74,12 +96,35 @@ describe('productService', () => {
       });
 
       expect(result.products).toEqual([]);
-      expect(result.pagination.totalItems).toBe(0);
-      expect(result.pagination.totalPages).toBe(0);
+      expect(result.pagination).toEqual({
+        page: 1,
+        limit: 10,
+        totalItems: 0,
+        totalPages: 0,
+      });
+    });
+
+    it('should calculate total pages correctly', async () => {
+      mockedRepository.findMany.mockResolvedValue({
+        products: [sampleProduct],
+        totalItems: 21,
+      });
+
+      const result = await productService.listProducts({
+        page: 1,
+        limit: 10,
+        sortBy: 'createdAt',
+        sortOrder: 'desc',
+      });
+
+      expect(result.pagination.totalPages).toBe(3);
     });
   });
 
-  // GET PRODUCT
+  // ---------------------------------------------
+  // GET PRODUCT BY ID
+  // ---------------------------------------------
+
   describe('getProductById', () => {
     it('should return an active product', async () => {
       mockedRepository.findActiveById.mockResolvedValue(sampleProduct);
@@ -88,6 +133,7 @@ describe('productService', () => {
 
       expect(result).toEqual(sampleProduct);
       expect(mockedRepository.findActiveById).toHaveBeenCalledWith('prod-123');
+      expect(mockedRepository.findActiveById).toHaveBeenCalledOnce();
     });
 
     it('should throw ProductNotFoundError when product does not exist', async () => {
@@ -99,7 +145,10 @@ describe('productService', () => {
     });
   });
 
-  // AVAILABILITY
+  // ---------------------------------------------
+  // PRODUCT AVAILABILITY
+  // ---------------------------------------------
+
   describe('checkAvailability', () => {
     it('should return available when stock is greater than zero', async () => {
       mockedRepository.findActiveById.mockResolvedValue({
@@ -131,7 +180,7 @@ describe('productService', () => {
       });
     });
 
-    it('should throw ProductNotFoundError for missing product', async () => {
+    it('should throw ProductNotFoundError when product does not exist', async () => {
       mockedRepository.findActiveById.mockResolvedValue(null);
 
       await expect(productService.checkAvailability('invalid-id')).rejects.toThrow(
@@ -140,7 +189,10 @@ describe('productService', () => {
     });
   });
 
+  // ---------------------------------------------
   // STOCK ADJUSTMENT
+  // ---------------------------------------------
+
   describe('adjustStock', () => {
     it('should increase product stock', async () => {
       mockedRepository.findById.mockResolvedValueOnce(sampleProduct).mockResolvedValueOnce({
@@ -156,6 +208,7 @@ describe('productService', () => {
       });
 
       expect(mockedRepository.adjustStock).toHaveBeenCalledWith('prod-123', 'INCREASE', 5);
+
       expect(result.stock).toBe(15);
     });
 
@@ -173,6 +226,7 @@ describe('productService', () => {
       });
 
       expect(mockedRepository.adjustStock).toHaveBeenCalledWith('prod-123', 'DECREASE', 3);
+
       expect(result.stock).toBe(7);
     });
 
