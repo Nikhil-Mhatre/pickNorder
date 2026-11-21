@@ -148,7 +148,7 @@ describe('productService', () => {
         stock: 15,
       });
 
-      mockedRepository.adjustStock.mockResolvedValue({ count: 1 } as any);
+      mockedRepository.adjustStock.mockResolvedValue({ count: 1 });
 
       const result = await productService.adjustStock('prod-123', {
         operation: 'INCREASE',
@@ -165,7 +165,7 @@ describe('productService', () => {
         stock: 7,
       });
 
-      mockedRepository.adjustStock.mockResolvedValue({ count: 1 } as any);
+      mockedRepository.adjustStock.mockResolvedValue({ count: 1 });
 
       const result = await productService.adjustStock('prod-123', {
         operation: 'DECREASE',
