@@ -39,11 +39,12 @@ jobs:
         run: pnpm install --frozen-lockfile
         working-directory: .
 
-      - name: Lint
-        run: pnpm lint
-
       - name: Generate Prisma Client
         run: pnpm db:generate:product
+        working-directory: .
+
+      - name: Lint
+        run: pnpm lint
 
       - name: Typecheck
         run: pnpm typecheck
