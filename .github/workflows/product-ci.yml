@@ -1,4 +1,4 @@
-name: Product Service CI
+name: pickNorder CI
 
 on:
   pull_request:
@@ -9,17 +9,17 @@ permissions:
   contents: read
 
 concurrency:
-  group: product-ci-${{ github.event.pull_request.number }}
+  group: picknorder-ci-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
 jobs:
-  product-service-ci:
-    name: Product Service CI
+  picknorder-ci:
+    name: pickNorder CI
     runs-on: ubuntu-latest
 
     defaults:
       run:
-        working-directory: services/product
+        working-directory: .
 
     steps:
       - name: Checkout repository
@@ -37,11 +37,9 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-        working-directory: .
 
-      - name: Generate Prisma Client
+      - name: Generate Prisma Client For Product Service
         run: pnpm db:generate:product
-        working-directory: .
 
       - name: Lint
         run: pnpm lint
