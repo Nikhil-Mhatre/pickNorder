@@ -1,0 +1,104 @@
+{
+  "info": {
+    "name": "pickNorder - Product Service",
+    "description": "Postman collection for testing pickNorder Product Service health checks, product catalog, product details, availability, and stock adjustments. Default base URL is http://localhost:3000. Seed product IDs are included as examples; update the productId collection variable if needed.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000", "type": "string" },
+    { "key": "productId", "value": "prod-wireless-headphones", "type": "string" },
+    { "key": "outOfStockProductId", "value": "prod-dumbbell-set", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Liveness",
+          "request": { "method": "GET", "header": [], "url": { "raw": "{{baseUrl}}/health/live", "host": ["{{baseUrl}}"], "path": ["health", "live"] } },
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Liveness returns 200', () => pm.response.to.have.status(200));", "pm.test('Response status is ok', () => pm.expect(pm.response.json().status).to.eql('ok'));" ] } }]
+        },
+        {
+          "name": "Readiness",
+          "request": { "method": "GET", "header": [], "url": { "raw": "{{baseUrl}}/health/ready", "host": ["{{baseUrl}}"], "path": ["health", "ready"] } },
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Readiness returns 200 when DB is available', () => pm.response.to.have.status(200));", "pm.test('Response status is ready', () => pm.expect(pm.response.json().status).to.eql('ready'));" ] } }]
+        }
+      ]
+    },
+    {
+      "name": "Products - Catalog",
+      "item": [
+        {
+          "name": "List products (default pagination)",
+          "request": { "method": "GET", "header": [], "url": { "raw": "{{baseUrl}}/api/products", "host": ["{{baseUrl}}"], "path": ["api", "products"] } },
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Returns 200', () => pm.response.to.have.status(200));", "pm.test('Has success, data array and pagination', () => { const body = pm.response.json(); pm.expect(body.success).to.eql(true); pm.expect(body.data).to.be.an('array'); pm.expect(body.pagination).to.be.an('object'); });" ] } }]
+        },
+        {
+          "name": "List products (pagination + category + search + sorting)",
+          "request": { "method": "GET", "header": [], "url": { "raw": "{{baseUrl}}/api/products?page=1&limit=5&category=Electronics&search=wireless&sortBy=price&sortOrder=asc", "host": ["{{baseUrl}}"], "path": ["api", "products"], "query": [ {"key":"page","value":"1"}, {"key":"limit","value":"5"}, {"key":"category","value":"Electronics"}, {"key":"search","value":"wireless"}, {"key":"sortBy","value":"price"}, {"key":"sortOrder","value":"asc"} ] } },
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Filtered catalog returns 200', () => pm.response.to.have.status(200));", "pm.test('Pagination values are correct', () => { const p = pm.response.json().pagination; pm.expect(p.page).to.eql(1); pm.expect(p.limit).to.eql(5); });" ] } }]
+        },
+        {
+          "name": "List products (invalid limit - validation error)",
+          "request": { "method": "GET", "header": [], "url": { "raw": "{{baseUrl}}/api/products?page=0&limit=101", "host": ["{{baseUrl}}"], "path": ["api", "products"], "query": [ {"key":"page","value":"0"}, {"key":"limit","value":"101"} ] } },
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Invalid query returns 400', () => pm.response.to.have.status(400));", "pm.test('Validation error envelope is returned', () => { const body = pm.response.json(); pm.expect(body.success).to.eql(false); pm.expect(body.error.code).to.eql('VALIDATION_ERROR'); pm.expect(body.error.traceId).to.be.a('string'); });" ] } }]
+        }
+      ]
+    },
+    {
+      "name": "Products - Details & Availability",
+      "item": [
+        {
+          "name": "Get product by ID (seeded headphones)",
+          "request": { "method": "GET", "header": [], "url": { "raw": "{{baseUrl}}/api/products/{{productId}}", "host": ["{{baseUrl}}"], "path": ["api", "products", "{{productId}}"] } },
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Product detail returns 200', () => pm.response.to.have.status(200));", "pm.test('Product payload is present', () => { const body = pm.response.json(); pm.expect(body.success).to.eql(true); pm.expect(body.data).to.be.an('object'); pm.expect(body.data.id).to.eql(pm.collectionVariables.get('productId')); });" ] } }]
+        },
+        {
+          "name": "Get product by ID (unknown ID - 404)",
+          "request": { "method": "GET", "header": [], "url": { "raw": "{{baseUrl}}/api/products/does-not-exist", "host": ["{{baseUrl}}"], "path": ["api", "products", "does-not-exist"] } },
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Unknown product returns 404', () => pm.response.to.have.status(404));", "pm.test('Product not found error code', () => pm.expect(pm.response.json().error.code).to.eql('PRODUCT_NOT_FOUND'));" ] } }]
+        },
+        {
+          "name": "Check product availability",
+          "request": { "method": "GET", "header": [], "url": { "raw": "{{baseUrl}}/api/products/{{productId}}/availability", "host": ["{{baseUrl}}"], "path": ["api", "products", "{{productId}}", "availability"] } },
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Availability returns 200', () => pm.response.to.have.status(200));", "pm.test('Availability fields exist', () => { const body = pm.response.json(); pm.expect(body.success).to.eql(true); pm.expect(body.data.productId).to.eql(pm.collectionVariables.get('productId')); pm.expect(body.data.available).to.be.a('boolean'); pm.expect(body.data.stock).to.be.a('number'); });" ] } }]
+        }
+      ]
+    },
+    {
+      "name": "Products - Stock Adjustment",
+      "item": [
+        {
+          "name": "Increase stock (+5)",
+          "request": { "method": "PATCH", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"operation\": \"INCREASE\",\n  \"quantity\": 5\n}", "options": { "raw": { "language": "json" } } }, "url": { "raw": "{{baseUrl}}/api/products/{{productId}}/stock", "host": ["{{baseUrl}}"], "path": ["api", "products", "{{productId}}", "stock"] } },
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Stock increase returns 200', () => pm.response.to.have.status(200));", "pm.test('Success response shape', () => { const body = pm.response.json(); pm.expect(body.success).to.eql(true); pm.expect(body.message).to.eql('Stock updated successfully'); pm.expect(body.data.stock).to.be.a('number'); });" ] } }]
+        },
+        {
+          "name": "Decrease stock (-2)",
+          "request": { "method": "PATCH", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"operation\": \"DECREASE\",\n  \"quantity\": 2\n}", "options": { "raw": { "language": "json" } } }, "url": { "raw": "{{baseUrl}}/api/products/{{productId}}/stock", "host": ["{{baseUrl}}"], "path": ["api", "products", "{{productId}}", "stock"] } },
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Stock decrease returns 200', () => pm.response.to.have.status(200));", "pm.test('Stock is returned after decrement', () => pm.expect(pm.response.json().data.stock).to.be.a('number'));" ] } }]
+        },
+        {
+          "name": "Decrease stock (insufficient stock - 409)",
+          "request": { "method": "PATCH", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"operation\": \"DECREASE\",\n  \"quantity\": 999999\n}", "options": { "raw": { "language": "json" } } }, "url": { "raw": "{{baseUrl}}/api/products/{{productId}}/stock", "host": ["{{baseUrl}}"], "path": ["api", "products", "{{productId}}", "stock"] } },
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Insufficient stock returns 409', () => pm.response.to.have.status(409));", "pm.test('Insufficient stock error code', () => pm.expect(pm.response.json().error.code).to.eql('INSUFFICIENT_STOCK'));" ] } }]
+        },
+        {
+          "name": "Stock adjustment (invalid payload - 400)",
+          "request": { "method": "PATCH", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"operation\": \"REMOVE\",\n  \"quantity\": -4\n}", "options": { "raw": { "language": "json" } } }, "url": { "raw": "{{baseUrl}}/api/products/{{productId}}/stock", "host": ["{{baseUrl}}"], "path": ["api", "products", "{{productId}}", "stock"] } },
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Invalid stock payload returns 400', () => pm.response.to.have.status(400));", "pm.test('Validation error code', () => pm.expect(pm.response.json().error.code).to.eql('VALIDATION_ERROR'));" ] } }]
+        }
+      ]
+    },
+    {
+      "name": "Routing",
+      "item": [
+        {
+          "name": "Unknown route (404)",
+          "request": { "method": "GET", "header": [], "url": { "raw": "{{baseUrl}}/api/does-not-exist", "host": ["{{baseUrl}}"], "path": ["api", "does-not-exist"] } },
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Unknown route returns 404', () => pm.response.to.have.status(404));", "pm.test('Route not found code', () => pm.expect(pm.response.json().error.code).to.eql('ROUTE_NOT_FOUND'));" ] } }]
+        }
+      ]
+    }
+  ]
+}

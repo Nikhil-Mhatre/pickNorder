@@ -1,6 +1,7 @@
 {
   "name": "picknorder",
   "private": true,
+  "packageManager": "pnpm@12.14.0",
   "scripts": {
     "dev:product": "pnpm --filter @picknorder/product-service dev",
     "build:product": "pnpm --filter @picknorder/product-service build",
@@ -11,6 +12,7 @@
     "lint": "pnpm -r lint",
     "lint:fix": "pnpm -r lint:fix",
     "format": "pnpm -r format",
+    "test": "pnpm -r test",
     "format:check": "pnpm -r format:check",
     "typecheck": "pnpm -r typecheck",
     "lint:product": "pnpm --filter @picknorder/product-service lint",
@@ -18,6 +20,6 @@
     "format:product": "pnpm --filter @picknorder/product-service format",
     "format:check:product": "pnpm --filter @picknorder/product-service format:check",
     "typecheck:product": "pnpm --filter @picknorder/product-service typecheck",
-    "db:lint:product": "pnpm --filter @picknorder/product-service lint"
+    "test:product": "pnpm --filter @picknorder/product-service test"
   }
 }

@@ -1,9 +1,9 @@
 import { app } from './app.js';
-import { env } from './config/env.js';
+import { env } from './shared/config/env.js';
 
 import type { Server } from 'node:http';
-import { prisma } from './infra/database/prisma.js';
-import { logger } from './utils/logger.js';
+import { prisma } from './shared/infra/database/prisma.js';
+import { logger } from './shared/utils/logger.js';
 
 let server: Server | undefined;
 let shuttingDown = false;
