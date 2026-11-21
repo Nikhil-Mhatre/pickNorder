@@ -2,13 +2,21 @@ export type Product = {
   id: string;
   name: string;
   description: string | null;
-  price: string;
-  category: string;
+  price: number;
+  category: Category;
   imageUrl: string | null;
   stock: number;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
+};
+
+export type Category = {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  productCount: number;
 };
 
 export type Pagination = {

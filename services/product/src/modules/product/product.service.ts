@@ -1,7 +1,7 @@
 import { InsufficientStockError } from '../../shared/errors/insufficient-stock.error.js';
 import { ProductNotFoundError } from '../../shared/errors/product-not-found.error.js';
 import { productRepository } from './product.repository.js';
-import type { ProductListQuery, StockAdjustmentInput } from './product.validator.js';
+import type { ProductListQuery, StockAdjustmentInput } from './product.types.js';
 
 export const productService = {
   async listProducts(query: ProductListQuery) {

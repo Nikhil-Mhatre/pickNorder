@@ -44,7 +44,7 @@ export function ProductCard({ product, imagePriority = false, onAddToCart }: Pro
 
       <CardContent className="space-y-3 p-3 sm:p-4">
         <div className="space-y-1">
-          <p className="text-xs text-muted-foreground">{product.category}</p>
+          <p className="text-xs text-muted-foreground">{product.category.name}</p>
           <Link
             href={`/products/${product.id}`}
             className="line-clamp-2 text-sm font-medium leading-5 hover:text-primary"
