@@ -1,0 +1,23 @@
+{
+  "name": "picknorder",
+  "private": true,
+  "scripts": {
+    "dev:product": "pnpm --filter @picknorder/product-service dev",
+    "build:product": "pnpm --filter @picknorder/product-service build",
+    "start:product": "pnpm --filter @picknorder/product-service start",
+    "db:generate:product": "pnpm --filter @picknorder/product-service db:generate",
+    "db:migrate:product": "pnpm --filter @picknorder/product-service db:migrate",
+    "db:seed:product": "pnpm --filter @picknorder/product-service db:seed",
+    "lint": "pnpm -r lint",
+    "lint:fix": "pnpm -r lint:fix",
+    "format": "pnpm -r format",
+    "format:check": "pnpm -r format:check",
+    "typecheck": "pnpm -r typecheck",
+    "lint:product": "pnpm --filter @picknorder/product-service lint",
+    "lint:fix:product": "pnpm --filter @picknorder/product-service lint:fix",
+    "format:product": "pnpm --filter @picknorder/product-service format",
+    "format:check:product": "pnpm --filter @picknorder/product-service format:check",
+    "typecheck:product": "pnpm --filter @picknorder/product-service typecheck",
+    "db:lint:product": "pnpm --filter @picknorder/product-service lint"
+  }
+}
