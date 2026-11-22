@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express';
-import { prisma } from '../../shared/infra/database/prisma.js';
+import { db } from '../../prisma/db.js';
 
 export const livenessCheck = (_req: Request, res: Response): void => {
   res.status(200).json({
@@ -9,7 +9,8 @@ export const livenessCheck = (_req: Request, res: Response): void => {
 
 export const readinessCheck = async (_req: Request, res: Response): Promise<void> => {
   try {
-    await prisma.$queryRaw`SELECT 1`;
+    // await prisma.$queryRaw`SELECT 1`;
+    db.raw.sql`SELECT 1`;
 
     res.status(200).json({
       status: 'ready',

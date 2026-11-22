@@ -2,15 +2,15 @@ import { app } from './app.js';
 import { env } from './shared/config/env.js';
 
 import type { Server } from 'node:http';
-import { prisma } from './shared/infra/database/prisma.js';
 import { logger } from './shared/utils/logger.js';
+import { db } from './prisma/db.js';
 
 let server: Server | undefined;
 let shuttingDown = false;
 
 async function startServer(): Promise<void> {
   // Connect to PostgreSQL first.
-  await prisma.$connect();
+  await db.connect();
   logger.info('Connected to PostgreSQL');
 
   // Start HTTP only after required dependencies are ready.
@@ -52,7 +52,7 @@ async function shutdown(signal: string): Promise<void> {
       });
     }
 
-    await prisma.$disconnect();
+    await db.close();
 
     logger.info('Product Service stopped');
   } catch (error) {
@@ -78,7 +78,7 @@ startServer().catch(async (error) => {
   process.exitCode = 1;
 
   try {
-    await prisma.$disconnect();
+    await await db.close();
   } catch (cleanupError) {
     logger.error({ err: cleanupError }, 'Startup cleanup failed');
   }

@@ -1,18 +1,11 @@
-generator client {
-  provider = "prisma-client-js"
-}
-
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-}
+// use prisma-8
 
 // ---------------------------------------------
-// Category
+// Product
 // ---------------------------------------------
 
 model Category {
-  id          String  @id @default(cuid())
+  id          String  @id @onCreate(cuid(2))
   name        String  @unique
   slug        String  @unique
   description String?
@@ -22,7 +15,7 @@ model Category {
   products Product[]
 
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt temporal.UpdatedAt
 
   @@index([isActive])
 }
@@ -32,10 +25,10 @@ model Category {
 // ---------------------------------------------
 
 model Product {
-  id          String  @id @default(cuid())
+  id          String  @id @onCreate(cuid(2))
   name        String
   description String?
-  price       Decimal @db.Decimal(10, 2)
+  price       Decimal(precision: 10, scale: 2)
 
   // Foreign key pointing to Category.id
   categoryId String
@@ -48,7 +41,7 @@ model Product {
   category Category @relation(fields: [categoryId], references: [id], onDelete: Restrict, onUpdate: Cascade)
 
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt temporal.UpdatedAt
 
   @@index([categoryId])
   @@index([isActive])
