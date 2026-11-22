@@ -23,7 +23,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'07dde03bda662e8f1a337e4994692fcdacc8f632f17867f03f9921e0bb4704cb'>;
+  StorageHashBase<'daaeb8f5b2a4509bea167582b776efc309cc334ff66468f5587dd1d6c1cddf52'>;
 export type ExecutionHash =
   ExecutionHashBase<'598bf3a16e1cabf76f17e20ce6367cea316f86715798d1d4f8cde46cf4730631'>;
 export type ProfileHash =
@@ -513,6 +513,12 @@ type ContractBase = Omit<
                   readonly unique: false;
                 },
                 {
+                  readonly name: 'Product_isActive_categoryId_idx_44f61b73';
+                  readonly prefix: 'Product_isActive_categoryId_idx';
+                  readonly columns: readonly ['isActive', 'categoryId'];
+                  readonly unique: false;
+                },
+                {
                   readonly name: 'Product_isActive_idx_77fe3ba1';
                   readonly prefix: 'Product_isActive_idx';
                   readonly columns: readonly ['isActive'];
@@ -522,6 +528,12 @@ type ContractBase = Omit<
                   readonly name: 'Product_name_idx_ce87e6ba';
                   readonly prefix: 'Product_name_idx';
                   readonly columns: readonly ['name'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'Product_price_idx_696ad5eb';
+                  readonly prefix: 'Product_price_idx';
+                  readonly columns: readonly ['price'];
                   readonly unique: false;
                 },
               ];
