@@ -9,11 +9,6 @@ env:
   NODE_ENV: development
   PORT: "3001"
   LOG_LEVEL: debug
-  KAFKA_ENABLED: "false"
-  KAFKA_CLIENT_ID: products-service
-  KAFKA_SSL: "true"
-  KAFKA_SASL_MECHANISM: scram-sha-256
-  KAFKA_IDENTITY_TOPIC: products.events
 
 resources:
   requests:
