@@ -17,8 +17,6 @@ spec:
               revision: feat
               directories:
                 - path: k8s/*-service
-                - path: k8s/products-service
-                  exclude: true
 
           - list:
               elements:
