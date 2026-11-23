@@ -1,0 +1,203 @@
+
+// use prisma-8
+
+// ============================================================
+// CATEGORY MODEL
+// ============================================================
+// A category is used to group products into logical collections,
+// for example: Electronics, Clothing, Books, or Accessories.
+//
+// One Category can have many Products, but each Product belongs
+// to exactly one Category.
+//
+// Categories can be deactivated using isActive instead of being
+// deleted. This prevents accidentally breaking relationships with
+// existing products.
+// ============================================================
+
+model Category {
+  // ----------------------------------------------------------
+  // Primary Key
+  // ----------------------------------------------------------
+  // Unique identifier generated automatically when a category
+  // is created. CUID2 provides a collision-resistant ID without
+  // requiring sequential database IDs.
+  id String @id @onCreate(cuid(2))
+
+  // ----------------------------------------------------------
+  // Category Information
+  // ----------------------------------------------------------
+
+  // Human-readable category name displayed on the storefront.
+  // Must be unique to prevent duplicate categories.
+  name String @unique
+
+  // URL-friendly identifier used for category routes and API
+  // filtering. Example: "mobile-phones" instead of a category ID.
+  // Must be unique.
+  slug String @unique
+
+  // Optional additional information about the category.
+  // Nullable because every category does not need a description.
+  description String?
+
+  // Determines whether the category is visible/usable in the
+  // storefront. Inactive categories should not appear in public
+  // category listings.
+  // Defaults to true for newly created categories.
+  isActive Boolean @default(true)
+
+  // ----------------------------------------------------------
+  // Relationship
+  // ----------------------------------------------------------
+
+  // One category can contain multiple products.
+  // Product.category defines the opposite side of this relation.
+  products Product[]
+
+  // ----------------------------------------------------------
+  // Timestamps
+  // ----------------------------------------------------------
+
+  // Records when the category was created.
+  // The database sets this automatically on insertion.
+  createdAt DateTime @default(now())
+
+  // Automatically updated by Prisma whenever the category is
+  // created or updated.
+  updatedAt temporal.UpdatedAt
+
+  // ----------------------------------------------------------
+  // Indexes
+  // ----------------------------------------------------------
+
+  // Helps queries that filter categories by their active status.
+  @@index([isActive])
+}
+
+
+// ============================================================
+// PRODUCT MODEL
+// ============================================================
+// Represents an individual product available in the catalog.
+//
+// Products belong to a Category and contain the information
+// required by the storefront to display product listings,
+// product details, pricing, images, and availability.
+//
+// This model does not include admin CRUD functionality.
+// ============================================================
+
+model Product {
+  // ----------------------------------------------------------
+  // Primary Key
+  // ----------------------------------------------------------
+  // Automatically generated unique identifier for every product.
+  id String @id @onCreate(cuid(2))
+
+  // ----------------------------------------------------------
+  // Product Information
+  // ----------------------------------------------------------
+
+  // Product name displayed to customers.
+  // Indexed to support name-based queries and sorting.
+  name String
+
+  // Optional product description.
+  // Can be null if a description has not been provided.
+  description String?
+
+  // Product selling price.
+  // Precision 10 and scale 2 allow up to 10 total digits,
+  // including 2 decimal places.
+  // Example: 99999999.99
+  //
+  // Decimal is used instead of Float to avoid floating-point
+  // rounding issues when handling monetary values.
+  price Decimal(precision: 10, scale: 2)
+
+  // ----------------------------------------------------------
+  // Category Relationship
+  // ----------------------------------------------------------
+
+  // Foreign key referencing the Category this product belongs to.
+  // Every product must belong to a valid category.
+  categoryId String
+
+  // Defines the relationship between Product and Category.
+  //
+  // onDelete: Restrict
+  // Prevents deleting a category while products are associated
+  // with it. This protects catalog data from accidental deletion.
+  //
+  // onUpdate: Cascade
+  // If the referenced category ID changes, the related foreign
+  // key on products will be updated as well.
+  category Category @relation(
+    fields: [categoryId],
+    references: [id],
+    onDelete: Restrict,
+    onUpdate: Cascade
+  )
+
+  // ----------------------------------------------------------
+  // Media
+  // ----------------------------------------------------------
+
+  // Optional URL for the product image displayed on the
+  // storefront. Nullable because a product may not have an
+  // image available when it is initially seeded.
+  imageUrl String?
+
+  // ----------------------------------------------------------
+  // Inventory / Availability
+  // ----------------------------------------------------------
+
+  // Number of units currently available in inventory.
+  // Defaults to zero so newly created products are not assumed
+  // to be available for purchase without stock being specified.
+  stock Int @default(0)
+
+  // Controls whether the product is visible in the public catalog.
+  // Inactive products should be excluded from public listing,
+  // search, and category results.
+  isActive Boolean @default(true)
+
+  // ----------------------------------------------------------
+  // Timestamps
+  // ----------------------------------------------------------
+
+  // Timestamp representing when the product was created.
+  createdAt DateTime @default(now())
+
+  // Automatically updated whenever the product is modified.
+  updatedAt temporal.UpdatedAt
+
+  // ----------------------------------------------------------
+  // Indexes
+  // ----------------------------------------------------------
+
+  // Helps filter products by category.
+  @@index([categoryId])
+
+  // Helps queries that filter active/inactive products.
+  @@index([isActive])
+
+  // Helps price-based sorting and range filtering.
+  // Used by queries such as minPrice, maxPrice, and price sorting.
+  @@index([price])
+
+  // Helps product name-based queries and alphabetical sorting.
+  // Note: This does NOT make substring searches such as
+  // "contains" fast. Consider PostgreSQL trigram/full-text
+  // indexing only if search performance becomes a problem.
+  @@index([name])
+
+  // Composite index for queries that filter products by active
+  // status and category together, which is common for storefront
+  // category pages.
+  //
+  // Example:
+  // WHERE isActive = true AND categoryId = '...'
+  @@index([isActive, categoryId])
+}

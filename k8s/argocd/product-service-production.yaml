@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: products-service-production
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/Nikhil-Mhatre/pickNorder.git
+    targetRevision: feat
+    path: k8s/products-service
+    helm:
+      valueFiles:
+        - values-production.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: products-production
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
