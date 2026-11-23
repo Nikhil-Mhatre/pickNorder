@@ -25,7 +25,7 @@ app.use(
       res.setHeader('x-request-id', requestId);
       return requestId;
     },
-    customProps: () => ({ service: 'product-service' }),
+    customProps: () => ({ service: 'products-service' }),
     customAttributeKeys: { reqId: 'requestId' },
     serializers: {
       req: (req) => ({
