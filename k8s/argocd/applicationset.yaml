@@ -1,4 +1,3 @@
-
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
@@ -34,10 +33,7 @@ spec:
       source:
         repoURL: https://github.com/Nikhil-Mhatre/pickNorder.git
         targetRevision: feat
-        path: '{{ .path.path }}'
-        helm:
-          valueFiles:
-            - 'values-{{ .environment }}.yaml'
+        path: '{{ .path.path }}/overlays/{{ .environment }}'
 
       destination:
         server: https://kubernetes.default.svc

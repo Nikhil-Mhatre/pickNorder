@@ -1,0 +1,11 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: products-service
+spec:
+  replicas: 1
+  template:
+    spec:
+      containers:
+        - name: products-service
+          image: YOUR_DOCKERHUB_USERNAME/products-service:dev
