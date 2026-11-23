@@ -19,4 +19,4 @@ spec:
             - containerPort: 3001
           envFrom:
             - secretRef:
-                name: product-service-secrets
+                name: products-service-secrets
