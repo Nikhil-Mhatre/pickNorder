@@ -8,4 +8,4 @@ spec:
     spec:
       containers:
         - name: products-service
-          image: nikhilmhatre0317/products-service:1.0.0
+          image: nikhilmhatre0317/picknorder-products-service:1.0.0
