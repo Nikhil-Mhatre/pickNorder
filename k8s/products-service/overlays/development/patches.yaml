@@ -8,4 +8,4 @@ spec:
     spec:
       containers:
         - name: products-service
-          image: YOUR_DOCKERHUB_USERNAME/products-service:dev
+          image: nikhilmhatre0317/products-service:dev
