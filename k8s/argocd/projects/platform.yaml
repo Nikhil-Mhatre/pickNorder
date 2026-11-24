@@ -16,6 +16,8 @@ spec:
   destinations:
     - server: https://kubernetes.default.svc
       namespace: gateway
+    - server: https://kubernetes.default.svc
+      namespace: default
 
   # Platform infrastructure needs certain cluster-scoped resources.
   clusterResourceWhitelist:
