@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: products-development
+  labels:
+    environment: development
+    managed-by: argocd
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: products-production
+  labels:
+    environment: production
+    managed-by: argocd

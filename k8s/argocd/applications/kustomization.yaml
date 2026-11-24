@@ -4,3 +4,4 @@ kind: Kustomization
 resources:
   - applicationset.yaml
   - gateway-infrastructure.yaml
+  - platform-namespaces.yaml
