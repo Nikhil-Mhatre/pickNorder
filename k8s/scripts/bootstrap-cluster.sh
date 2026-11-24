@@ -74,7 +74,7 @@ kubectl wait \
 echo "[4/4] Applying Argo CD root application..."
 
 kubectl apply \
-  -f "$ROOT_DIR/k8s/bootstrap/root-application.yaml"
+  -f "$ROOT_DIR/bootstrap/root-application.yaml"
 
 # --------------------------------------------------
 # Done
