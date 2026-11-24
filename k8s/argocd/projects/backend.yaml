@@ -11,6 +11,8 @@ spec:
 
   destinations:
     - server: https://kubernetes.default.svc
+      namespace: '*-development'
+    - server: https://kubernetes.default.svc
       namespace: '*-production'
 
   clusterResourceWhitelist: []
