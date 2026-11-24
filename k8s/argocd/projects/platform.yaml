@@ -1,0 +1,29 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+
+metadata:
+  name: platform
+  namespace: argocd
+
+spec:
+  description: PickNOrder platform infrastructure
+
+  sourceRepos:
+    - https://github.com/Nikhil-Mhatre/pickNorder.git
+
+  destinations:
+    - server: https://kubernetes.default.svc
+      namespace: gateway
+
+  # Platform infrastructure needs certain cluster-scoped resources.
+  clusterResourceWhitelist:
+    - group: ""
+      kind: Namespace
+
+    - group: gateway.networking.k8s.io
+      kind: GatewayClass
+
+  # Namespaced resources allowed for platform infrastructure.
+  namespaceResourceWhitelist:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
