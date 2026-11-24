@@ -27,7 +27,7 @@ spec:
       namespace: argocd
 
     spec:
-      project: default
+      project: backend
 
       source:
         repoURL: https://github.com/Nikhil-Mhatre/pickNorder.git

@@ -1,0 +1,24 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: backend
+  namespace: argocd
+spec:
+  description: PickNOrder backend microservices
+
+  sourceRepos:
+    - https://github.com/Nikhil-Mhatre/pickNorder.git
+
+  destinations:
+    - server: https://kubernetes.default.svc
+      namespace: '*-production'
+
+  clusterResourceWhitelist: []
+
+  namespaceResourceWhitelist:
+    - group: ''
+      kind: Service
+    - group: ''
+      kind: ConfigMap
+    - group: apps
+      kind: Deployment
