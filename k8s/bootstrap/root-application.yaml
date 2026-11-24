@@ -1,8 +1,10 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
+
 metadata:
   name: picknorder-bootstrap
   namespace: argocd
+
 spec:
   project: default
 
@@ -10,8 +12,6 @@ spec:
     repoURL: https://github.com/Nikhil-Mhatre/pickNorder.git
     targetRevision: main
     path: k8s/argocd
-    directory:
-      recurse: true
 
   destination:
     server: https://kubernetes.default.svc
