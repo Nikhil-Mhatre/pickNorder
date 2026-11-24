@@ -57,3 +57,6 @@ spec:
     # Deployment: manages application Pods and rolling updates.
     - group: apps
       kind: Deployment
+    # HTTPRoute: defines routing rules for traffic entering the cluster.
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
