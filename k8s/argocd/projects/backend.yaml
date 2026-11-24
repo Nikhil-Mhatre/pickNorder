@@ -11,6 +11,9 @@ metadata:
   # AppProjects are managed by Argo CD and are stored in the argocd namespace.
   namespace: argocd
 
+  annotations:
+    argocd.argoproj.io/sync-wave: "-2"
+
 spec:
   # Human-readable description of the project's purpose.
   description: PickNOrder backend microservices
