@@ -12,7 +12,7 @@ spec:
   source:
     repoURL: https://github.com/Nikhil-Mhatre/pickNorder.git
     targetRevision: feat
-    path: k8s/gateway/base
+    path: k8s/platform/envoy-gateway/config/base
 
   destination:
     server: https://kubernetes.default.svc

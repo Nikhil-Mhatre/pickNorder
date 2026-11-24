@@ -15,7 +15,7 @@ spec:
               repoURL: https://github.com/Nikhil-Mhatre/pickNorder.git
               revision: feat
               directories:
-                - path: k8s/*-service
+                - path: k8s/apps/*-service
 
           - list:
               elements:

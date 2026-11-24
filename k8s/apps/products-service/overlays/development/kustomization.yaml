@@ -5,6 +5,7 @@ namespace: products-development
 
 resources:
   - ../../base
+  - httproute.yaml
 
 patches:
   - path: patches.yaml
