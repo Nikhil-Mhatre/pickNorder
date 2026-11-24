@@ -12,22 +12,8 @@ kubectl create secret generic products-service-secrets \
   --dry-run=client -o yaml | kubectl apply -f -
 ```
 
-## Envoy GATEWAY Installation
+## ArgoCD Default Password
 
 ```bash
-helm install eg oci://docker.io/envoyproxy/gateway-helm \
-  --version v1.10.0 \
-  --namespace envoy-gateway-system \
-  --create-namespace
-
-# After installation, wait for the controller:
-kubectl wait \
-  --namespace envoy-gateway-system \
-  deployment/envoy-gateway \
-  --for=condition=Available \
-  --timeout=300s
-
-# verify
-kubectl get pods -n envoy-gateway-system
-kubectl get crds | grep gateway.networking.k8s.io
+kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d; echo
 ```
