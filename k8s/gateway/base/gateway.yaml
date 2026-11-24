@@ -1,0 +1,23 @@
+# Gateway defines the entry point for incoming HTTP traffic.
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+
+metadata:
+  name: picknorder-gateway
+  namespace: gateway
+
+spec:
+  # Use the Envoy Gateway controller we registered earlier.
+  gatewayClassName: eg
+
+  listeners:
+    # HTTP listener for local development.
+    - name: http
+      protocol: HTTP
+      port: 80
+
+      # Routes from other namespaces are permitted.
+      # We'll restrict this later if needed.
+      allowedRoutes:
+        namespaces:
+          from: All

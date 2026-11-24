@@ -1,26 +1,59 @@
+# AppProject is an Argo CD resource used to logically group applications
+# and control what those applications are allowed to deploy.
 apiVersion: argoproj.io/v1alpha1
 kind: AppProject
+
 metadata:
+  # The name of this Argo CD Project.
+  # Applications assigned to this project will inherit its permissions.
   name: backend
+
+  # AppProjects are managed by Argo CD and are stored in the argocd namespace.
   namespace: argocd
+
 spec:
+  # Human-readable description of the project's purpose.
   description: PickNOrder backend microservices
 
+  # Defines which Git repositories applications in this project
+  # are allowed to use as their source.
+  # This prevents applications from deploying manifests
+  # from unapproved repositories.
   sourceRepos:
     - https://github.com/Nikhil-Mhatre/pickNorder.git
 
+  # Defines the Kubernetes clusters and namespaces where applications
+  # belonging to this project are allowed to deploy.
+  # These are permissions, not instructions to deploy.
   destinations:
+    # Allow backend applications to deploy to the development
+    # namespace of the Products Service.
     - server: https://kubernetes.default.svc
-      namespace: '*-development'
-    - server: https://kubernetes.default.svc
-      namespace: '*-production'
+      namespace: products-development
 
+    # Allow backend applications to deploy to the production
+    # namespace of the Products Service.
+    - server: https://kubernetes.default.svc
+      namespace: products-production
+
+  # Prevent this project from creating cluster-scoped resources
+  # such as Nodes, ClusterRoles, or ClusterRoleBindings.
+  # Backend application deployments generally don't need these.
   clusterResourceWhitelist: []
 
+  # Allow only the following Kubernetes resource types to be created
+  # by applications belonging to this project.
+  # group "" represents the core Kubernetes API group.
   namespaceResourceWhitelist:
-    - group: ''
+    # Kubernetes Service: provides stable networking and access
+    # to Pods within the cluster.
+    - group: ""
       kind: Service
-    - group: ''
+
+    # ConfigMap: stores non-sensitive configuration data.
+    - group: ""
       kind: ConfigMap
+
+    # Deployment: manages application Pods and rolling updates.
     - group: apps
       kind: Deployment
