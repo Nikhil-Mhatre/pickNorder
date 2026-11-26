@@ -1,7 +1,7 @@
 import { db } from '../../prisma/db.js';
 import { AppError } from '../../shared/errors/app-error.js';
 import { ErrorCodes } from '../../shared/errors/error-codes.js';
-import { CategoryResponse } from './categories.types.js';
+import type { CategoryResponse } from './categories.types.js';
 
 export const listCategories = async (): Promise<CategoryResponse[]> => {
   const categories = await db.orm.public.Category.where({ isActive: true })

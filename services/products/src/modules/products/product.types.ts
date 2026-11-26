@@ -1,6 +1,6 @@
-import { Scalars } from '@prisma/orm-postgres/components';
+import type { Scalars } from '@prisma/orm-postgres/components';
 import { z } from 'zod';
-import { Models } from '../../prisma/contract.js';
+import type { Models } from '../../prisma/contract.js';
 
 export const GetProductByIdSchema = z.object({
   id: z.string().trim().min(1, 'Product ID is required').max(64, 'Invalid product ID'),

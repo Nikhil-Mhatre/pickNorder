@@ -1,6 +1,6 @@
-import { Scalars } from '@prisma/orm-postgres/components';
+import type { Scalars } from '@prisma/orm-postgres/components';
 import { z } from 'zod';
-import { Models } from '../../prisma/contract.js';
+import type { Models } from '../../prisma/contract.js';
 
 export const CategorySlugSchema = z.object({
   slug: z
