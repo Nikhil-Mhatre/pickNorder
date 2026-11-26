@@ -8,6 +8,7 @@ import healthRouter from './modules/health/health.routes.js';
 import productV1Router from './modules/products/products.route.js';
 import { notFoundHandler } from './shared/middleware/not-found.middleware.js';
 import { errorHandler } from './shared/middleware/error-handler.middleware.js';
+import categoryV1Router from './modules/categories/categories.route.js';
 
 const requestIdPattern = /^[a-zA-Z0-9._-]{1,128}$/;
 
@@ -58,6 +59,7 @@ app.use(express.urlencoded({ extended: true }));
 // Health endpoints
 app.use('/health', healthRouter);
 app.use('/api/v1/products', productV1Router);
+app.use('/api/v1/categories', categoryV1Router);
 
 // 6. Unknown routes
 app.use(notFoundHandler);

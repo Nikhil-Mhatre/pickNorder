@@ -1,23 +1,22 @@
-import type { Request, Response } from 'express';
+import type { RequestHandler } from 'express';
 import { db } from '../../prisma/db.js';
 
-export const livenessCheck = (_req: Request, res: Response): void => {
+export const livenessController: RequestHandler = (_req, res) => {
   res.status(200).json({
     status: 'ok',
   });
 };
 
-export const readinessCheck = async (_req: Request, res: Response): Promise<void> => {
+export const readinessController: RequestHandler = async (_req, res) => {
   try {
-    // await prisma.$queryRaw`SELECT 1`;
-    await db.raw.sql`SELECT 1`;
+    await db.query(db.raw.sql`SELECT 1 AS ok`.returnsRow({ ok: 'pg/int4@1' }).build());
 
     res.status(200).json({
-      status: 'ready',
+      status: 'ok',
     });
   } catch {
     res.status(503).json({
-      status: 'not_ready',
+      status: 'error',
     });
   }
 };
