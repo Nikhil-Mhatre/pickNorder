@@ -1,28 +1,28 @@
+import type { ErrorCode } from './error-codes.js';
+import type { ErrorDetails } from './error-response.schema.js';
+
 export interface AppErrorOptions {
   statusCode: number;
-  errorCode: string;
+  code: ErrorCode;
   message: string;
-  details?: unknown;
-  isOperational?: boolean;
+  details?: ErrorDetails;
   cause?: unknown;
 }
 
 export class AppError extends Error {
   public readonly statusCode: number;
-  public readonly errorCode: string;
-  public readonly details?: unknown;
-  public readonly isOperational: boolean;
+  public readonly code: ErrorCode;
+  public readonly details?: ErrorDetails;
+  public readonly isOperational = true;
 
   constructor(options: AppErrorOptions) {
     super(options.message, { cause: options.cause });
 
-    this.name = new.target.name;
-
+    this.name = 'AppError';
     this.statusCode = options.statusCode;
-    this.errorCode = options.errorCode;
+    this.code = options.code;
     this.details = options.details;
-    this.isOperational = options.isOperational ?? true;
 
-    Error.captureStackTrace?.(this, new.target);
+    Error.captureStackTrace?.(this, AppError);
   }
 }

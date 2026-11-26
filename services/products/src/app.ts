@@ -4,10 +4,10 @@ import cors from 'cors';
 import helmet from 'helmet';
 import { pinoHttp } from 'pino-http';
 import { logger } from './shared/utils/logger.js';
-import { notFoundHandler } from './shared/middleware/not-found.middleware.js';
-import { errorHandler } from './shared/middleware/error-handler.middleware.js';
 import healthRouter from './modules/health/health.routes.js';
 import productV1Router from './modules/products/products.route.js';
+import { notFoundHandler } from './shared/middleware/not-found.middleware.js';
+import { errorHandler } from './shared/middleware/error-handler.middleware.js';
 
 const requestIdPattern = /^[a-zA-Z0-9._-]{1,128}$/;
 
