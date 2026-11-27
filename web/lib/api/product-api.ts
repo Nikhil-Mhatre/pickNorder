@@ -1,7 +1,7 @@
 import axios from "axios";
 import type { ProductResponse, Category } from "@/types/product";
 
-// Store the service root URL (without /api/products or /api/categories).
+// Store the service root URL (without /api/v1/products or /api/v1/categories).
 const API_URL = process.env.NEXT_PUBLIC_PRODUCT_SERVICE_URL;
 
 const productApi = axios.create({
@@ -25,10 +25,11 @@ export async function getProducts(
   }
 
   try {
-    const response = await productApi.get<ProductResponse>("/api/products", {
+    const response = await productApi.get<ProductResponse>("/api/v1/products", {
       params,
       signal,
     });
+    console.log(response);
     return response.data;
   } catch (error) {
     throw getApiErrorMessage(error, "Unable to load products.");
@@ -42,7 +43,7 @@ export async function getCategories(signal?: AbortSignal): Promise<Category[]> {
   }
 
   try {
-    const response = await productApi.get<ApiResponse<Category[]>>("/api/categories", {
+    const response = await productApi.get<ApiResponse<Category[]>>("/api/v1/categories", {
       signal,
     });
     return response.data.data;
