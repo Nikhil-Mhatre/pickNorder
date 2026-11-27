@@ -1,0 +1,527 @@
+{
+  "info": {
+    "name": "pickNorder - Orders Service API",
+    "description": "Postman collection for testing the pickNorder Orders Service. Imports endpoints for orders, categories, health, and internal stock adjustments. Update baseUrl to match your service port. Stock adjustment endpoints are internal-only and should be protected before exposing them. Run the Orders > List orders (default) and Categories > List categories requests first to populate collection variables productId and categorySlug.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Orders",
+      "item": [
+        {
+          "name": "List orders (default)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/orders",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "orders"]
+            },
+            "description": "Default page of active orders. Captures the first returned productId and categorySlug for later requests."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response has success and orders data\", () => { const body=pm.response.json(); pm.expect(body.success).to.eql(true); pm.expect(body.data).to.be.an(\"array\"); pm.expect(body.pagination).to.be.an(\"object\"); });",
+                  "const body = pm.response.json(); if (body.data && body.data.length) { pm.collectionVariables.set(\"productId\", body.data[0].id); pm.collectionVariables.set(\"categorySlug\", body.data[0].category.slug); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List orders (pagination)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/orders?page=2&limit=12",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "orders"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "2",
+                  "disabled": false
+                },
+                {
+                  "key": "limit",
+                  "value": "12",
+                  "disabled": false
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test(\"HTTP status is 200\", () => pm.response.to.have.status(200));"]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Search orders",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/orders?search=headphones",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "orders"],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "headphones",
+                  "disabled": false
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test(\"HTTP status is 200\", () => pm.response.to.have.status(200));"]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Filter by category",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/orders?category={{categorySlug}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "orders"],
+              "query": [
+                {
+                  "key": "category",
+                  "value": "{{categorySlug}}",
+                  "disabled": false
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test(\"HTTP status is 200\", () => pm.response.to.have.status(200));"]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Sort by lowest price",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/orders?sortBy=price&sortOrder=asc",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "orders"],
+              "query": [
+                {
+                  "key": "sortBy",
+                  "value": "price",
+                  "disabled": false
+                },
+                {
+                  "key": "sortOrder",
+                  "value": "asc",
+                  "disabled": false
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test(\"HTTP status is 200\", () => pm.response.to.have.status(200));"]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Combined filters",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/orders?page=1&limit=12&category={{categorySlug}}&search=wireless&sortBy=price&sortOrder=asc",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "orders"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "disabled": false
+                },
+                {
+                  "key": "limit",
+                  "value": "12",
+                  "disabled": false
+                },
+                {
+                  "key": "category",
+                  "value": "{{categorySlug}}",
+                  "disabled": false
+                },
+                {
+                  "key": "search",
+                  "value": "wireless",
+                  "disabled": false
+                },
+                {
+                  "key": "sortBy",
+                  "value": "price",
+                  "disabled": false
+                },
+                {
+                  "key": "sortOrder",
+                  "value": "asc",
+                  "disabled": false
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test(\"HTTP status is 200\", () => pm.response.to.have.status(200));"]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get orders by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/orders/{{productId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "orders", "{{productId}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Orders details response shape\", () => { const body=pm.response.json(); pm.expect(body.success).to.eql(true); pm.expect(body.data).to.be.an(\"object\"); pm.expect(body.data.id).to.eql(pm.collectionVariables.get(\"productId\")); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Check orders availability",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/orders/{{productId}}/availability",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "orders", "{{productId}}", "availability"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Availability response shape\", () => { const body=pm.response.json(); pm.expect(body.success).to.eql(true); pm.expect(body.data).to.have.property(\"productId\"); pm.expect(body.data.available).to.be.a(\"boolean\"); pm.expect(body.data.stock).to.be.a(\"number\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Increase stock (internal)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/orders/{{productId}}/stock",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "orders", "{{productId}}", "stock"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"operation\": \"INCREASE\",\n  \"quantity\": 10\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Internal endpoint. Do not expose to unauthenticated storefront clients."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Stock adjustment response shape\", () => { const body=pm.response.json(); pm.expect(body.success).to.eql(true); pm.expect(body.data).to.have.property(\"stock\"); pm.expect(body.message).to.eql(\"Stock adjusted successfully\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Decrease stock (internal)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/orders/{{productId}}/stock",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "orders", "{{productId}}", "stock"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"operation\": \"DECREASE\",\n  \"quantity\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Internal endpoint. Choose quantity that does not exceed current stock."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Stock adjustment response shape\", () => { const body=pm.response.json(); pm.expect(body.success).to.eql(true); pm.expect(body.data).to.have.property(\"stock\"); pm.expect(body.message).to.eql(\"Stock adjusted successfully\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Invalid stock adjustment (validation test)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/orders/{{productId}}/stock",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "orders", "{{productId}}", "stock"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"operation\": \"DECREASE\",\n  \"quantity\": 0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Validation error status is 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Error response format\", () => { const body=pm.response.json(); pm.expect(body.success).to.eql(false); pm.expect(body.error).to.be.an(\"object\"); pm.expect(body.error.code).to.eql(\"VALIDATION_ERROR\"); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Categories",
+      "item": [
+        {
+          "name": "List categories",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/categories",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "categories"]
+            },
+            "description": "Captures the first active category slug for the detail request."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Category list response shape\", () => { const body=pm.response.json(); pm.expect(body.success).to.eql(true); pm.expect(body.data).to.be.an(\"array\"); });",
+                  "const body = pm.response.json(); if (body.data && body.data.length) { pm.collectionVariables.set(\"categorySlug\", body.data[0].slug); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get category by slug",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/categories/{{categorySlug}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "categories", "{{categorySlug}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Category response shape\", () => { const body=pm.response.json(); pm.expect(body.success).to.eql(true); pm.expect(body.data).to.be.an(\"object\"); pm.expect(body.data.slug).to.eql(pm.collectionVariables.get(\"categorySlug\")); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Invalid category slug (validation test)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/categories/Bad_Slug!",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "categories", "Bad_Slug!"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Validation error status is 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Error response format\", () => { const body=pm.response.json(); pm.expect(body.success).to.eql(false); pm.expect(body.error.code).to.eql(\"VALIDATION_ERROR\"); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Liveness",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health/live",
+              "host": ["{{baseUrl}}"],
+              "path": ["health", "live"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Liveness response\", () => { const body=pm.response.json(); pm.expect(body.success).to.eql(true); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Readiness",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health/ready",
+              "host": ["{{baseUrl}}"],
+              "path": ["health", "ready"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Readiness returns successful status\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "productId",
+      "value": "replace-with-orders-id",
+      "type": "string"
+    },
+    {
+      "key": "categorySlug",
+      "value": "electronics",
+      "type": "string"
+    }
+  ]
+}

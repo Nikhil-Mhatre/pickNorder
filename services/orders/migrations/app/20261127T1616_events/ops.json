@@ -1,0 +1,99 @@
+[
+  {
+    "id": "table.ProcessedEvent",
+    "label": "Create table \"ProcessedEvent\"",
+    "summary": "Creates table \"ProcessedEvent\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "ProcessedEvent"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"ProcessedEvent\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"ProcessedEvent\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "table \"ProcessedEvent\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"ProcessedEvent\"",
+        "sql": "CREATE TABLE \"public\".\"ProcessedEvent\" (\n  \"eventId\" text NOT NULL,\n  \"eventType\" text NOT NULL,\n  \"processedAt\" timestamptz(3) DEFAULT (now()) NOT NULL,\n  PRIMARY KEY (\"eventId\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"ProcessedEvent\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" WHERE (\"c\".\"oid\" = to_regclass($1) AND (\"c\".\"relkind\" = $2 OR \"c\".\"relkind\" = $3))) AS \"result\"",
+        "params": [
+          "\"public\".\"ProcessedEvent\"",
+          "r",
+          "p"
+        ],
+        "expectation": {
+          "expects": "present",
+          "object": "table \"ProcessedEvent\""
+        }
+      }
+    ]
+  },
+  {
+    "id": "index.ProcessedEvent.ProcessedEvent_eventType_idx_e4cf7742",
+    "label": "Create index \"ProcessedEvent_eventType_idx_e4cf7742\" on \"ProcessedEvent\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "ProcessedEvent_eventType_idx_e4cf7742",
+        "table": "ProcessedEvent"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"ProcessedEvent_eventType_idx_e4cf7742\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"ProcessedEvent_eventType_idx_e4cf7742\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "index \"ProcessedEvent_eventType_idx_e4cf7742\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"ProcessedEvent_eventType_idx_e4cf7742\"",
+        "sql": "CREATE INDEX \"ProcessedEvent_eventType_idx_e4cf7742\" ON \"public\".\"ProcessedEvent\" (\"eventType\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"ProcessedEvent_eventType_idx_e4cf7742\" exists on \"ProcessedEvent\" with the planned definition",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_index\" AS \"i\" ON \"i\".\"indexrelid\" = \"c\".\"oid\" INNER JOIN \"pg_am\" AS \"m\" ON \"m\".\"oid\" = \"c\".\"relam\" WHERE (\"c\".\"oid\" = to_regclass($1) AND (\"c\".\"relkind\" = $2 OR \"c\".\"relkind\" = $3) AND \"i\".\"indrelid\" = to_regclass($4) AND NOT (\"i\".\"indisunique\") AND \"m\".\"amname\" = $5 AND (\"i\".\"indexprs\" IS NULL AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"i\".\"indkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"i\".\"indrelid\" AND key_attribute.attnum = key_column.attnum) = ($6)::jsonb) AND \"i\".\"indpred\" IS NULL)) AS \"result\"",
+        "params": [
+          "\"public\".\"ProcessedEvent_eventType_idx_e4cf7742\"",
+          "i",
+          "I",
+          "\"public\".\"ProcessedEvent\"",
+          "btree",
+          "[\"eventType\"]"
+        ]
+      }
+    ]
+  }
+]

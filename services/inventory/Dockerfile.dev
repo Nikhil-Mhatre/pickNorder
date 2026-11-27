@@ -1,0 +1,26 @@
+
+FROM node:22-bookworm-slim
+
+# Set working directory inside container
+WORKDIR /app
+
+# Enable Corepack for pnpm
+RUN corepack enable
+
+# Copy dependency files first
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+
+# Install dependencies
+RUN pnpm install --frozen-lockfile
+
+# Copy application source
+COPY . .
+
+# Emit Prisma 8 contract artifacts
+RUN pnpm db:generate-client
+
+# Development port
+EXPOSE 3001
+
+# Start development server
+CMD ["pnpm", "dev"]

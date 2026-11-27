@@ -1,0 +1,116 @@
+{
+  "info": {
+    "name": "pickNorder - Orders Service API",
+    "description": "Postman collection for the pickNorder Orders Service API. Covers orders, categories, stock adjustment, and health endpoints. Stock adjustment is intended for internal callers and should not be exposed without authentication/authorization.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Liveness",
+          "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/health/live" },
+          "response": []
+        },
+        {
+          "name": "Readiness (database check)",
+          "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/health/ready" },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Orders",
+      "item": [
+        {
+          "name": "List orders - default pagination",
+          "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/v1/orders" },
+          "response": []
+        },
+        {
+          "name": "List orders - combined filters, search, pagination, sort",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/orders?page=1&limit=12&category={{categorySlug}}&search=wireless&sortBy=price&sortOrder=asc",
+              "host": ["{{baseUrl}}"],
+              "path": ["api/v1", "orders"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "12" },
+                { "key": "category", "value": "{{categorySlug}}" },
+                { "key": "search", "value": "wireless" },
+                { "key": "sortBy", "value": "price" },
+                { "key": "sortOrder", "value": "asc" }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get orders by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/orders/{{productId}}"
+          },
+          "response": []
+        },
+        {
+          "name": "Increase stock (internal)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"operation\": \"INCREASE\",\n  \"quantity\": 10\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/api/v1/orders/{{productId}}/stock"
+          },
+          "response": []
+        },
+        {
+          "name": "Decrease stock (internal)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"operation\": \"DECREASE\",\n  \"quantity\": 3\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/api/v1/orders/{{productId}}/stock"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Categories",
+      "item": [
+        {
+          "name": "List categories",
+          "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/v1/categories" },
+          "response": []
+        },
+        {
+          "name": "Get category by slug",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/categories/{{categorySlug}}"
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3001", "type": "string" },
+    { "key": "productId", "value": "i3q777507pk9t0hl9msrblke", "type": "string" },
+    { "key": "categorySlug", "value": "electronics", "type": "string" }
+  ]
+}
