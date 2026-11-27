@@ -25,7 +25,7 @@ spec:
 
   template:
     metadata:
-      name: '{{ .path.basename }}-{{ .environment }}'
+      name: "{{ .path.basename }}-{{ .environment }}"
       namespace: argocd
 
     spec:
@@ -34,12 +34,15 @@ spec:
       source:
         repoURL: https://github.com/Nikhil-Mhatre/pickNorder.git
         targetRevision: feat
-        path: '{{ .path.path }}/overlays/{{ .environment }}'
+        path: "{{ .path.path }}/overlays/{{ .environment }}"
 
       destination:
         server: https://kubernetes.default.svc
         namespace: '{{ trimSuffix "-service" .path.basename }}-{{ .environment }}'
 
       syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
         syncOptions:
           - CreateNamespace=true
