@@ -5,6 +5,7 @@ import type { Server } from 'node:http';
 import { logger } from './shared/utils/logger.js';
 import { db } from './prisma/db.js';
 import { connectKafka, disconnectKafka } from './shared/infra/kafka.connection.js';
+import { startKafkaConsumer, stopKafkaConsumer } from './shared/infra/kafka.consumer.js';
 
 let server: Server | undefined;
 let shuttingDown = false;
@@ -17,6 +18,9 @@ async function startServer(): Promise<void> {
   // Connect to Kafka before starting HTTP.
   // If Kafka is enabled but unavailable, startup will fail.
   await connectKafka();
+
+  // Start the Kafka consumer after Kafka connection is established.
+  await startKafkaConsumer();
 
   // Start HTTP only after required dependencies are ready.
   await new Promise<void>((resolve, reject) => {
@@ -62,6 +66,14 @@ async function shutdown(signal: string): Promise<void> {
     process.exitCode = 1;
   }
 
+  // Stop the consumer before disconnecting Kafka.
+  try {
+    await stopKafkaConsumer();
+  } catch (error) {
+    logger.error({ err: error }, 'Kafka consumer shutdown failed');
+    process.exitCode = 1;
+  }
+
   // Attempt to close Kafka even if HTTP shutdown failed.
   try {
     await disconnectKafka();
@@ -96,6 +108,13 @@ startServer().catch(async (error) => {
   logger.fatal({ err: error }, 'Product Service startup failed');
 
   process.exitCode = 1;
+
+  // Clean up the consumer if it started before startup failed.
+  try {
+    await stopKafkaConsumer();
+  } catch (cleanupError) {
+    logger.error({ err: cleanupError }, 'Kafka consumer startup cleanup failed');
+  }
 
   // Clean up resources that may have connected before startup failed.
   try {
