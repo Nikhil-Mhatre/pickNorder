@@ -23,7 +23,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'daaeb8f5b2a4509bea167582b776efc309cc334ff66468f5587dd1d6c1cddf52'>;
+  StorageHashBase<'6d0d9ac50ff3d474c46429c35779efce1177ae7d71a0c19c8a3b8a663336df8a'>;
 export type ExecutionHash =
   ExecutionHashBase<'598bf3a16e1cabf76f17e20ce6367cea316f86715798d1d4f8cde46cf4730631'>;
 export type ProfileHash =
@@ -320,6 +320,12 @@ export namespace Models {
     products: public_Product[];
     readonly [RelationKeys]?: 'products';
   };
+  export type public_ProcessedEvent = {
+    eventId: FieldOutputTypes['public']['ProcessedEvent']['eventId'];
+    eventType: FieldOutputTypes['public']['ProcessedEvent']['eventType'];
+    processedAt: FieldOutputTypes['public']['ProcessedEvent']['processedAt'];
+    readonly [RelationKeys]?: never;
+  };
   export type public_Product = {
     categoryId: FieldOutputTypes['public']['Product']['categoryId'];
     createdAt: FieldOutputTypes['public']['Product']['createdAt'];
@@ -339,6 +345,7 @@ export namespace Models {
 export declare const models: {
   public: {
     Category: Models.public_Category;
+    ProcessedEvent: Models.public_ProcessedEvent;
     Product: Models.public_Product;
   };
 };
@@ -423,6 +430,41 @@ type ContractBase = Omit<
                   readonly name: 'Category_isActive_idx_77fe3ba1';
                   readonly prefix: 'Category_isActive_idx';
                   readonly columns: readonly ['isActive'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [];
+            };
+            readonly ProcessedEvent: {
+              columns: {
+                readonly eventId: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly eventType: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly processedAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                  readonly typeParams: { readonly precision: 3 };
+                  readonly many: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['eventId'] };
+              uniques: readonly [];
+              indexes: readonly [
+                {
+                  readonly name: 'ProcessedEvent_eventType_idx_e4cf7742';
+                  readonly prefix: 'ProcessedEvent_eventType_idx';
+                  readonly columns: readonly ['eventType'];
                   readonly unique: false;
                 },
               ];
@@ -564,6 +606,10 @@ type ContractBase = Omit<
   readonly targetFamily: 'sql';
   readonly roots: {
     readonly Category: { readonly namespace: 'public' & NamespaceId; readonly model: 'Category' };
+    readonly ProcessedEvent: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'ProcessedEvent';
+    };
     readonly Product: { readonly namespace: 'public' & NamespaceId; readonly model: 'Product' };
   };
   readonly domain: {
@@ -633,6 +679,36 @@ type ContractBase = Omit<
                 readonly name: { readonly column: 'name' };
                 readonly slug: { readonly column: 'slug' };
                 readonly updatedAt: { readonly column: 'updatedAt' };
+              };
+            };
+          };
+          readonly ProcessedEvent: {
+            readonly fields: {
+              readonly eventId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly eventType: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly processedAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-date@1';
+                  readonly typeParams: { readonly precision: 3 };
+                };
+              };
+            };
+            readonly relations: Record<string, never>;
+            readonly storage: {
+              readonly table: 'ProcessedEvent';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly eventId: { readonly column: 'eventId' };
+                readonly eventType: { readonly column: 'eventType' };
+                readonly processedAt: { readonly column: 'processedAt' };
               };
             };
           };

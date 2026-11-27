@@ -8,6 +8,10 @@
       "model": "Category",
       "namespace": "public"
     },
+    "ProcessedEvent": {
+      "model": "ProcessedEvent",
+      "namespace": "public"
+    },
     "Product": {
       "model": "Product",
       "namespace": "public"
@@ -118,6 +122,50 @@
               },
               "namespaceId": "public",
               "table": "Category"
+            }
+          },
+          "ProcessedEvent": {
+            "fields": {
+              "eventId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "eventType": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "processedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-date@1",
+                  "kind": "scalar",
+                  "typeParams": {
+                    "precision": 3
+                  }
+                }
+              }
+            },
+            "relations": {},
+            "storage": {
+              "fields": {
+                "eventId": {
+                  "column": "eventId"
+                },
+                "eventType": {
+                  "column": "eventType"
+                },
+                "processedAt": {
+                  "column": "processedAt"
+                }
+              },
+              "namespaceId": "public",
+              "table": "ProcessedEvent"
             }
           },
           "Product": {
@@ -348,6 +396,49 @@
                 }
               ]
             },
+            "ProcessedEvent": {
+              "columns": {
+                "eventId": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "eventType": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "processedAt": {
+                  "codecId": "pg/timestamptz-date@1",
+                  "dataType": "pg/timestamptz",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nullable": false,
+                  "typeParams": {
+                    "precision": 3
+                  }
+                }
+              },
+              "foreignKeys": [],
+              "indexes": [
+                {
+                  "columns": [
+                    "eventType"
+                  ],
+                  "name": "ProcessedEvent_eventType_idx_e4cf7742",
+                  "prefix": "ProcessedEvent_eventType_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "eventId"
+                ]
+              },
+              "uniques": []
+            },
             "Product": {
               "columns": {
                 "categoryId": {
@@ -502,7 +593,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "daaeb8f5b2a4509bea167582b776efc309cc334ff66468f5587dd1d6c1cddf52"
+    "storageHash": "6d0d9ac50ff3d474c46429c35779efce1177ae7d71a0c19c8a3b8a663336df8a"
   },
   "execution": {
     "executionHash": "598bf3a16e1cabf76f17e20ce6367cea316f86715798d1d4f8cde46cf4730631",
