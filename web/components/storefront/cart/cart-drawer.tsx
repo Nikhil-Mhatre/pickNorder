@@ -1,7 +1,6 @@
 "use client";
 
 import { ShoppingBag, Minus, Plus, Trash2 } from "lucide-react";
-import Link from "next/link";
 import type { CartLine } from "@/store/cart-store";
 
 import { Button } from "@/components/ui/button";
@@ -13,6 +12,7 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/components/ui/sheet";
+import { useRouter } from "next/navigation";
 
 interface CartDrawerProps {
   open: boolean;
@@ -36,13 +36,14 @@ function formatPrice(price: number) {
 
 export function CartDrawer({
   open,
-  onOpenChange,
   items,
+  onOpenChange,
   setQuantity,
   removeItem,
   itemCount,
   subtotal,
 }: CartDrawerProps) {
+  const router = useRouter();
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="flex w-full flex-col gap-0 sm:max-w-md">
@@ -161,7 +162,13 @@ export function CartDrawer({
                 Shipping and taxes, if applicable, will be calculated at checkout.
               </p>
 
-              <Button className="w-full" size="lg" onClick={() => onOpenChange(false)}>
+              <Button
+                className="w-full"
+                size="lg"
+                onClick={() => {
+                  (onOpenChange(false), router.push("/cart"));
+                }}
+              >
                 View Cart
               </Button>
 

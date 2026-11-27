@@ -1,7 +1,6 @@
 "use client";
 
-import { Store, ShoppingBag } from "lucide-react";
-import { StoreHeader } from "@/components/storefront/store-header";
+import { Store } from "lucide-react";
 import { CatalogToolbar } from "@/components/storefront/catalog-toolbar";
 import { ProductGrid } from "@/components/storefront/product-grid";
 import { ProductGridSkeleton } from "@/components/storefront/product-grid-skeleton";
@@ -9,42 +8,19 @@ import { CatalogPagination } from "@/components/storefront/catalog-pagination";
 import { CatalogEmpty, CatalogError } from "@/components/storefront/catalog-states";
 import { useProducts } from "@/hooks/use-products";
 import { useCartStore } from "@/store/cart-store";
-import { CartDrawer } from "@/components/storefront/cart/cart-drawer";
-import { useEffect, useState } from "react";
 import type { Product } from "@/types/product";
 
 export default function HomePage() {
   const catalog = useProducts();
-  useEffect(() => {
-    useCartStore.persist.rehydrate();
-  }, []);
 
-  // State which controlls cart drawer opening/close
-  const [cartOpen, setCartOpen] = useState(false);
-
-  const cartItems = useCartStore((state) => state.items);
   const addItem = useCartStore((state) => state.addItem);
-  const setQuantity = useCartStore((state) => state.setQuantity);
-  const removeItem = useCartStore((state) => state.removeItem);
-
-  // Get Current Items in cart
-  const itemCount = useCartStore((state) => state.itemCount());
-  const subtotal = useCartStore((state) => state.subtotal());
 
   function handleAddToCart(product: Product) {
     addItem(product);
-    setCartOpen(true);
   }
 
   return (
     <div className="min-h-screen bg-background">
-      <StoreHeader
-        searchInput={catalog.searchInput}
-        onSearchChange={catalog.setSearchInput}
-        cartCount={itemCount}
-        setCartDrawerOpen={setCartOpen}
-      />
-
       <main className="mx-auto max-w-7xl px-4 pb-12 pt-6 sm:px-6 sm:pt-10 lg:px-8">
         {/* A compact hero introduces the store without pushing the catalog too far down. */}
         <section
@@ -114,27 +90,7 @@ export default function HomePage() {
             <CatalogEmpty onClear={catalog.clearFilters} />
           )}
         </section>
-        <CartDrawer
-          itemCount={itemCount}
-          subtotal={subtotal}
-          open={cartOpen}
-          onOpenChange={setCartOpen}
-          items={cartItems}
-          setQuantity={setQuantity}
-          removeItem={removeItem}
-        />
       </main>
-
-      <footer className="border-t">
-        <div className="mx-auto flex max-w-7xl flex-col gap-2 px-4 py-6 text-sm text-muted-foreground sm:px-6 lg:px-8">
-          <div className="flex items-center gap-2 font-medium text-foreground">
-            <ShoppingBag aria-hidden="true" className="size-4" />
-            <span>pickNorder</span>
-          </div>
-          <p>Discover products. Shop simply.</p>
-          <p className="text-xs">© 2026 pickNorder. All rights reserved.</p>
-        </div>
-      </footer>
     </div>
   );
 }
