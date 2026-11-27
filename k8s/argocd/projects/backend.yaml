@@ -63,3 +63,10 @@ spec:
     # HTTPRoute: defines routing rules for traffic entering the cluster.
     - group: gateway.networking.k8s.io
       kind: HTTPRoute
+        # ReplicaSet: manages the Pods created by a Deployment.
+    - group: apps
+      kind: ReplicaSet
+
+    # Pod: the actual running container instances.
+    - group: ""
+      kind: Pod
