@@ -4,8 +4,8 @@ import { env } from './shared/config/env.js';
 import type { Server } from 'node:http';
 import { logger } from './shared/utils/logger.js';
 import { db } from './prisma/db.js';
-import { connectKafka, disconnectKafka } from './shared/infra/kafka.connection.js';
-import { startKafkaConsumer, stopKafkaConsumer } from './shared/infra/kafka.consumer.js';
+import { connectKafka, disconnectKafka } from './shared/infra/kafka/kafka.connection.js';
+import { startKafkaConsumer, stopKafkaConsumer } from './shared/infra/kafka/kafka.consumer.js';
 
 let server: Server | undefined;
 let shuttingDown = false;

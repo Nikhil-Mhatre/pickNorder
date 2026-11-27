@@ -3,19 +3,22 @@ import { deductOrderStock } from './inventory.service.js';
 import { logger } from '../../shared/utils/logger.js';
 
 export async function handleOrderConfirmed(event: OrderConfirmedEvent): Promise<void> {
-  logger.info(
-    { eventId: event.eventId, orderId: event.data.orderId },
-    'Processing order confirmed event',
-  );
+  const { eventId, data } = event;
+  const { orderId, items } = data;
+
+  const context = {
+    eventId,
+    orderId,
+    itemCount: items.length,
+  };
+
+  logger.info(context, 'Handling order confirmed event');
 
   await deductOrderStock({
-    eventId: event.eventId,
-    orderId: event.data.orderId,
-    items: event.data.items,
+    eventId,
+    orderId,
+    items,
   });
 
-  logger.info(
-    { eventId: event.eventId, orderId: event.data.orderId },
-    'Order stock deducted successfully',
-  );
+  logger.info(context, 'Order inventory updated successfully');
 }

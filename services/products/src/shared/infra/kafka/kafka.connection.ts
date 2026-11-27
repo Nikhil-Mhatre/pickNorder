@@ -1,8 +1,8 @@
-import { env } from '../config/env.js';
-import { kafka } from '../config/kafka.config.js';
-import { logger } from '../utils/logger.js';
-import { AppError } from '../errors/app-error.js';
-import { ErrorCodes } from '../errors/error-codes.js';
+import { env } from '../../config/env.js';
+import { kafka } from '../../config/kafka.config.js';
+import { logger } from '../../utils/logger.js';
+import { AppError } from '../../errors/app-error.js';
+import { ErrorCodes } from '../../errors/error-codes.js';
 
 const kafkaAdmin = kafka.admin();
 
