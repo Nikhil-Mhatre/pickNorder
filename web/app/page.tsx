@@ -1,7 +1,6 @@
 "use client";
 
-import { Store, ShoppingBag } from "lucide-react";
-import { StoreHeader } from "@/components/storefront/store-header";
+import { Store } from "lucide-react";
 import { CatalogToolbar } from "@/components/storefront/catalog-toolbar";
 import { ProductGrid } from "@/components/storefront/product-grid";
 import { ProductGridSkeleton } from "@/components/storefront/product-grid-skeleton";
@@ -9,24 +8,19 @@ import { CatalogPagination } from "@/components/storefront/catalog-pagination";
 import { CatalogEmpty, CatalogError } from "@/components/storefront/catalog-states";
 import { useProducts } from "@/hooks/use-products";
 import { useCartStore } from "@/store/cart-store";
+import type { Product } from "@/types/product";
 
 export default function HomePage() {
   const catalog = useProducts();
 
-  // Subscribe only to the cart values this page needs.
-  const cartCount = useCartStore((state) =>
-    state.items.reduce((total, item) => total + item.quantity, 0),
-  );
   const addItem = useCartStore((state) => state.addItem);
+
+  function handleAddToCart(product: Product) {
+    addItem(product);
+  }
 
   return (
     <div className="min-h-screen bg-background">
-      <StoreHeader
-        searchInput={catalog.searchInput}
-        onSearchChange={catalog.setSearchInput}
-        cartCount={cartCount}
-      />
-
       <main className="mx-auto max-w-7xl px-4 pb-12 pt-6 sm:px-6 sm:pt-10 lg:px-8">
         {/* A compact hero introduces the store without pushing the catalog too far down. */}
         <section
@@ -87,7 +81,7 @@ export default function HomePage() {
 
           {!catalog.loading && !catalog.error && catalog.products.length > 0 && (
             <>
-              <ProductGrid products={catalog.products} onAddToCart={addItem} />
+              <ProductGrid products={catalog.products} onAddToCart={handleAddToCart} />
               <CatalogPagination pagination={catalog.pagination} onPageChange={catalog.goToPage} />
             </>
           )}
@@ -97,17 +91,6 @@ export default function HomePage() {
           )}
         </section>
       </main>
-
-      <footer className="border-t">
-        <div className="mx-auto flex max-w-7xl flex-col gap-2 px-4 py-6 text-sm text-muted-foreground sm:px-6 lg:px-8">
-          <div className="flex items-center gap-2 font-medium text-foreground">
-            <ShoppingBag aria-hidden="true" className="size-4" />
-            <span>pickNorder</span>
-          </div>
-          <p>Discover products. Shop simply.</p>
-          <p className="text-xs">© 2026 pickNorder. All rights reserved.</p>
-        </div>
-      </footer>
     </div>
   );
 }

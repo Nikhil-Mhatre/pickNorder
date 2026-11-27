@@ -1,0 +1,11 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: products-service
+spec:
+  replicas: 1
+  template:
+    spec:
+      containers:
+        - name: products-service
+          image: nikhilmhatre0317/picknorder-products-service:dev-1.0.0

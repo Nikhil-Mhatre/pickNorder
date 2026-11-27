@@ -1,0 +1,48 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: picknorder-services
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  goTemplate: true
+  goTemplateOptions:
+    - missingkey=error
+
+  generators:
+    - matrix:
+        generators:
+          - git:
+              repoURL: https://github.com/Nikhil-Mhatre/pickNorder.git
+              revision: feat
+              directories:
+                - path: k8s/apps/*-service
+
+          - list:
+              elements:
+                - environment: development
+
+  template:
+    metadata:
+      name: "{{ .path.basename }}-{{ .environment }}"
+      namespace: argocd
+
+    spec:
+      project: backend
+
+      source:
+        repoURL: https://github.com/Nikhil-Mhatre/pickNorder.git
+        targetRevision: feat
+        path: "{{ .path.path }}/overlays/{{ .environment }}"
+
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: '{{ trimSuffix "-service" .path.basename }}-{{ .environment }}'
+
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true

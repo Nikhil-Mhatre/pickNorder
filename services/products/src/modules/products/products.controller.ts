@@ -1,17 +1,29 @@
-import { Request, Response } from 'express';
-import { getProductById as getProduct } from './products.service.js';
-import { ValidationError } from '../../shared/errors/validation-error.js';
+import { asyncHandler } from '../../shared/utils/async-handler.js';
+import { buildSuccessResponse } from '../../shared/responses/success-response.js';
+import { getProductById, listProducts, updateProductStock } from './products.service.js';
 
-export const getProductById = async (req: Request, res: Response): Promise<void> => {
-  const { id } = req.params;
+export const getProductByIdController = asyncHandler(async (req, res) => {
+  const product = await getProductById(res.locals.productId);
 
-  if (!id || typeof id !== 'string') {
-    throw new ValidationError('Invalid product ID');
-  }
-  const product = await getProduct(id);
+  res.status(200).json(buildSuccessResponse({ data: product }));
+});
+
+export const updateProductStockController = asyncHandler(async (req, res) => {
+  const product = await updateProductStock(res.locals.productId, req.body);
 
   res.status(200).json({
     success: true,
+    message: 'Stock adjusted successfully',
     data: product,
   });
-};
+});
+
+export const listProductsController = asyncHandler(async (_req, res) => {
+  const result = await listProducts(res.locals.query);
+
+  res.status(200).json({
+    success: true,
+    data: result.data,
+    pagination: result.pagination,
+  });
+});

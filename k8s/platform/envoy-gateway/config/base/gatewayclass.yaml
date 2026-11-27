@@ -1,0 +1,12 @@
+# GatewayClass defines which Gateway controller will manage our Gateways.
+apiVersion: gateway.networking.k8s.io/v1
+kind: GatewayClass
+
+metadata:
+  # Name referenced by our Gateway resource.
+  name: eg
+
+spec:
+  # Identifies Envoy Gateway as the controller responsible
+  # for managing this GatewayClass.
+  controllerName: gateway.envoyproxy.io/gatewayclass-controller

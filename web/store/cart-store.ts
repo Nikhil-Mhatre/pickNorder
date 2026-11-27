@@ -11,6 +11,12 @@ export interface CartLine {
 interface CartState {
   items: CartLine[];
 
+  // Cart drawer state
+  isCartOpen: boolean;
+  openCart: () => void;
+  closeCart: () => void;
+  setCartOpen: (open: boolean) => void;
+
   // Cart actions
   addItem: (product: Product) => void;
   removeItem: (productId: string) => void;
@@ -19,6 +25,7 @@ interface CartState {
 
   // Derived value. Call it when you need the total quantity across all lines.
   itemCount: () => number;
+  subtotal: () => number;
 }
 
 // Keep updates in named helpers so each state transition is easy to inspect.
@@ -43,26 +50,33 @@ function calculateItemCount(items: CartLine[]): number {
   return items.reduce((total, line) => total + line.quantity, 0);
 }
 
+function calculateSubtotal(items: CartLine[]): number {
+  return items.reduce((total, line) => total + line.product.price * line.quantity, 0);
+}
+
 export const useCartStore = create<CartState>()(
   persist(
     (set, get) => ({
       items: [],
+      isCartOpen: false,
+
+      openCart: () => set({ isCartOpen: true }),
+
+      closeCart: () => set({ isCartOpen: false }),
+
+      setCartOpen: (open) => set({ isCartOpen: open }),
 
       addItem: (product) =>
         set((state) => {
           const productAlreadyInCart = state.items.some((line) => line.product.id === product.id);
 
-          // If the product is already present, increment its quantity instead
-          // of creating a duplicate cart line.
-          if (productAlreadyInCart) {
-            return {
-              items: incrementExistingLine(state.items, product.id),
-            };
-          }
-
-          // Otherwise, add a new cart line with an initial quantity of one.
           return {
-            items: [...state.items, { product, quantity: 1 }],
+            items: productAlreadyInCart
+              ? incrementExistingLine(state.items, product.id)
+              : [...state.items, { product, quantity: 1 }],
+
+            // Automatically open the drawer after adding a product
+            isCartOpen: true,
           };
         }),
 
@@ -79,11 +93,18 @@ export const useCartStore = create<CartState>()(
       clearCart: () => set({ items: [] }),
 
       itemCount: () => calculateItemCount(get().items),
+
+      subtotal: () => calculateSubtotal(get().items),
     }),
     {
       name: "picknorder-cart",
       // Persist the cart in browser local storage so it survives page reloads.
       storage: createJSONStorage(() => localStorage),
+      skipHydration: true,
+      // Persist cart items only, not drawer visibility
+      partialize: (state) => ({
+        items: state.items,
+      }),
     },
   ),
 );

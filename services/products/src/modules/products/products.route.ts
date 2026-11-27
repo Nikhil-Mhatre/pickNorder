@@ -1,9 +1,19 @@
 import { Router } from 'express';
-import { getProductById } from './products.controller.js';
-import { asyncHandler } from '../../shared/utils/async-handler.js';
+import {
+  getProductByIdController,
+  listProductsController,
+  updateProductStockController,
+} from './products.controller.js';
+import {
+  validateListProducts,
+  validateProductId,
+  validateStockUpdate,
+} from './product.validation.js';
 
 const productRouter = Router();
 
-productRouter.get('/:id', asyncHandler(getProductById));
+productRouter.get('/:id', validateProductId, getProductByIdController);
+productRouter.patch('/:id/stock', validateStockUpdate, updateProductStockController);
+productRouter.get('/', validateListProducts, listProductsController);
 
 export default productRouter;
