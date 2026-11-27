@@ -19,6 +19,7 @@ interface CartState {
 
   // Derived value. Call it when you need the total quantity across all lines.
   itemCount: () => number;
+  subtotal: () => number;
 }
 
 // Keep updates in named helpers so each state transition is easy to inspect.
@@ -41,6 +42,10 @@ function updateLineQuantity(items: CartLine[], productId: string, quantity: numb
 
 function calculateItemCount(items: CartLine[]): number {
   return items.reduce((total, line) => total + line.quantity, 0);
+}
+
+function calculateSubtotal(items: CartLine[]): number {
+  return items.reduce((total, line) => total + line.product.price * line.quantity, 0);
 }
 
 export const useCartStore = create<CartState>()(
@@ -79,11 +84,14 @@ export const useCartStore = create<CartState>()(
       clearCart: () => set({ items: [] }),
 
       itemCount: () => calculateItemCount(get().items),
+
+      subtotal: () => calculateSubtotal(get().items),
     }),
     {
       name: "picknorder-cart",
       // Persist the cart in browser local storage so it survives page reloads.
       storage: createJSONStorage(() => localStorage),
+      skipHydration: true,
     },
   ),
 );
