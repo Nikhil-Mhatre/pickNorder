@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ShoppingBag, ShoppingCart, UserRound, X } from "lucide-react";
+import { ShoppingBag, ShoppingCart, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 
@@ -35,9 +35,6 @@ export function Header({ cartCount = 0 }: StoreHeaderProps) {
                 {cartCount}
               </span>
             )}
-          </Button>
-          <Button variant="ghost" size="icon" aria-label="Account">
-            <UserRound className="size-5" />
           </Button>
         </div>
       </div>

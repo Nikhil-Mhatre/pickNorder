@@ -13,6 +13,7 @@ import {
   SheetDescription,
 } from "@/components/ui/sheet";
 import { useRouter } from "next/navigation";
+import { formatPrice } from "@/lib/format";
 
 interface CartDrawerProps {
   open: boolean;
@@ -22,16 +23,6 @@ interface CartDrawerProps {
   removeItem: (productId: string) => void;
   itemCount: number;
   subtotal: number;
-}
-
-const currencyFormatter = new Intl.NumberFormat("en-IN", {
-  style: "currency",
-  currency: "INR",
-  maximumFractionDigits: 2,
-});
-
-function formatPrice(price: number) {
-  return currencyFormatter.format(price);
 }
 
 export function CartDrawer({
