@@ -1,0 +1,27 @@
+replicaCount: 1
+
+image:
+  repository: nikhilmhatre0317/picknorder-products-service
+  tag: "1.0.0"
+  pullPolicy: IfNotPresent
+
+env:
+  NODE_ENV: production
+  PORT: "3001"
+  LOG_LEVEL: info
+  KAFKA_ENABLED: "false"
+  KAFKA_CLIENT_ID: products-service
+  KAFKA_SSL: "true"
+  KAFKA_SASL_MECHANISM: scram-sha-256
+  KAFKA_IDENTITY_TOPIC: products.events
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+probes:
+  enabled: false
