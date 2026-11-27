@@ -14,7 +14,7 @@ type SortOption = "newest" | "price-low" | "price-high" | "name";
 // Constants
 // ---------------------------------------------
 
-const PRODUCTS_PER_PAGE = 12;
+const PRODUCTS_PER_PAGE = 8;
 const SEARCH_DEBOUNCE_MS = 300;
 
 // Define how each UI sorting option maps to API parameters.
