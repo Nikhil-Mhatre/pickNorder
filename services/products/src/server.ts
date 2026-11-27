@@ -4,6 +4,7 @@ import { env } from './shared/config/env.js';
 import type { Server } from 'node:http';
 import { logger } from './shared/utils/logger.js';
 import { db } from './prisma/db.js';
+import { connectKafka, disconnectKafka } from './shared/infra/kafka.connection.js';
 
 let server: Server | undefined;
 let shuttingDown = false;
@@ -12,6 +13,10 @@ async function startServer(): Promise<void> {
   // Connect to PostgreSQL first.
   await db.connect();
   logger.info('Connected to PostgreSQL');
+
+  // Connect to Kafka before starting HTTP.
+  // If Kafka is enabled but unavailable, startup will fail.
+  await connectKafka();
 
   // Start HTTP only after required dependencies are ready.
   await new Promise<void>((resolve, reject) => {
@@ -43,6 +48,7 @@ async function shutdown(signal: string): Promise<void> {
   forceExitTimer.unref();
 
   try {
+    // Stop accepting new HTTP requests first.
     if (server?.listening) {
       await new Promise<void>((resolve, reject) => {
         server!.close((error) => {
@@ -51,16 +57,30 @@ async function shutdown(signal: string): Promise<void> {
         });
       });
     }
-
-    await db.close();
-
-    logger.info('Product Service stopped');
   } catch (error) {
-    logger.error({ err: error }, 'Graceful shutdown failed');
+    logger.error({ err: error }, 'HTTP server shutdown failed');
     process.exitCode = 1;
-  } finally {
-    clearTimeout(forceExitTimer);
   }
+
+  // Attempt to close Kafka even if HTTP shutdown failed.
+  try {
+    await disconnectKafka();
+  } catch (error) {
+    logger.error({ err: error }, 'Kafka shutdown failed');
+    process.exitCode = 1;
+  }
+
+  // Attempt to close PostgreSQL even if Kafka shutdown failed.
+  try {
+    await db.close();
+  } catch (error) {
+    logger.error({ err: error }, 'Database shutdown failed');
+    process.exitCode = 1;
+  }
+
+  logger.info('Product Service stopped');
+
+  clearTimeout(forceExitTimer);
 }
 
 process.on('SIGINT', () => void shutdown('SIGINT'));
@@ -77,9 +97,16 @@ startServer().catch(async (error) => {
 
   process.exitCode = 1;
 
+  // Clean up resources that may have connected before startup failed.
   try {
-    await await db.close();
+    await disconnectKafka();
   } catch (cleanupError) {
-    logger.error({ err: cleanupError }, 'Startup cleanup failed');
+    logger.error({ err: cleanupError }, 'Kafka startup cleanup failed');
+  }
+
+  try {
+    await db.close();
+  } catch (cleanupError) {
+    logger.error({ err: cleanupError }, 'Database startup cleanup failed');
   }
 });
