@@ -1,9 +1,10 @@
 #!/usr/bin/env -S node
-import type { Contract as End } from '../../snapshots/daaeb8f5b2a4509bea167582b776efc309cc334ff66468f5587dd1d6c1cddf52/contract';
-import endContract from '../../snapshots/daaeb8f5b2a4509bea167582b776efc309cc334ff66468f5587dd1d6c1cddf52/contract.json' with { type: 'json' };
+import type { Contract as End } from '../../snapshots/4f013e5638550d0af37a517a7bf088a83d6d2cf747c9f49761fce0a4d3a92e43/contract';
+import endContract from '../../snapshots/4f013e5638550d0af37a517a7bf088a83d6d2cf747c9f49761fce0a4d3a92e43/contract.json' with { type: 'json' };
 import {
   Migration,
   MigrationCLI,
+  checkExpression,
   col,
   fn,
   lit,
@@ -28,11 +29,6 @@ export default class M extends Migration<never, End> {
           }),
           col('description', 'text', { codecRef: { codecId: 'pg/text@1' } }),
           col('id', 'text', { notNull: true, codecRef: { codecId: 'pg/text@1' } }),
-          col('isActive', 'bool', {
-            notNull: true,
-            default: lit(true),
-            codecRef: { codecId: 'pg/bool@1' },
-          }),
           col('name', 'text', { notNull: true, codecRef: { codecId: 'pg/text@1' } }),
           col('slug', 'text', { notNull: true, codecRef: { codecId: 'pg/text@1' } }),
           col('updatedAt', 'timestamptz(3)', {
@@ -55,27 +51,25 @@ export default class M extends Migration<never, End> {
           col('description', 'text', { codecRef: { codecId: 'pg/text@1' } }),
           col('id', 'text', { notNull: true, codecRef: { codecId: 'pg/text@1' } }),
           col('imageUrl', 'text', { codecRef: { codecId: 'pg/text@1' } }),
-          col('isActive', 'bool', {
-            notNull: true,
-            default: lit(true),
-            codecRef: { codecId: 'pg/bool@1' },
-          }),
           col('name', 'text', { notNull: true, codecRef: { codecId: 'pg/text@1' } }),
           col('price', 'numeric(10,2)', {
             notNull: true,
             codecRef: { codecId: 'pg/numeric@1', typeParams: { precision: 10, scale: 2 } },
           }),
-          col('stock', 'int4', {
+          col('status', 'text', {
             notNull: true,
-            default: lit(0),
-            codecRef: { codecId: 'pg/int4@1' },
+            default: lit('ACTIVE'),
+            codecRef: { codecId: 'pg/text@1' },
           }),
           col('updatedAt', 'timestamptz(3)', {
             notNull: true,
             codecRef: { codecId: 'pg/timestamptz-date@1', typeParams: { precision: 3 } },
           }),
         ],
-        constraints: [primaryKey(['id'])],
+        constraints: [
+          primaryKey(['id']),
+          checkExpression('Product_status_check_ee520df2', sql`"status" IN ('ACTIVE', 'INACTIVE')`),
+        ],
       }),
       this.addUnique({
         schema: 'public',
@@ -91,27 +85,9 @@ export default class M extends Migration<never, End> {
       }),
       this.createIndex({
         schema: 'public',
-        table: 'Category',
-        index: 'Category_isActive_idx_77fe3ba1',
-        columns: ['isActive'],
-      }),
-      this.createIndex({
-        schema: 'public',
         table: 'Product',
         index: 'Product_categoryId_idx_15c304f2',
         columns: ['categoryId'],
-      }),
-      this.createIndex({
-        schema: 'public',
-        table: 'Product',
-        index: 'Product_isActive_categoryId_idx_44f61b73',
-        columns: ['isActive', 'categoryId'],
-      }),
-      this.createIndex({
-        schema: 'public',
-        table: 'Product',
-        index: 'Product_isActive_idx_77fe3ba1',
-        columns: ['isActive'],
       }),
       this.createIndex({
         schema: 'public',
@@ -124,6 +100,12 @@ export default class M extends Migration<never, End> {
         table: 'Product',
         index: 'Product_price_idx_696ad5eb',
         columns: ['price'],
+      }),
+      this.createIndex({
+        schema: 'public',
+        table: 'Product',
+        index: 'Product_status_idx_e98638ab',
+        columns: ['status'],
       }),
       this.addForeignKey({
         schema: 'public',

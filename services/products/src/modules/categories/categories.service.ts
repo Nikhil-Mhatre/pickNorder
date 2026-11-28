@@ -4,12 +4,11 @@ import { ErrorCodes } from '../../shared/errors/error-codes.js';
 import type { CategoryResponse } from './categories.types.js';
 
 export const listCategories = async (): Promise<CategoryResponse[]> => {
-  const categories = await db.orm.public.Category.where({ isActive: true })
-    .select('id', 'name', 'slug', 'description')
+  const categories = await db.orm.public.Category.select('id', 'name', 'slug', 'description')
     .orderBy((category) => category.name.asc())
     .all();
 
-  const activeProducts = await db.orm.public.Product.where({ isActive: true })
+  const activeProducts = await db.orm.public.Product.where({ status: 'ACTIVE' })
     .select('categoryId')
     .all();
 
@@ -30,10 +29,10 @@ export const listCategories = async (): Promise<CategoryResponse[]> => {
 
 export const getCategoryBySlug = async (slug: string): Promise<CategoryResponse> => {
   const category = await db.orm.public.Category.whereUnique({ slug })
-    .select('id', 'name', 'slug', 'description', 'isActive')
+    .select('id', 'name', 'slug', 'description')
     .first();
 
-  if (!category || !category.isActive) {
+  if (!category) {
     throw new AppError({
       statusCode: 404,
       code: ErrorCodes.CATEGORY_NOT_FOUND,
@@ -43,7 +42,7 @@ export const getCategoryBySlug = async (slug: string): Promise<CategoryResponse>
 
   const activeProducts = await db.orm.public.Product.where({
     categoryId: category.id,
-    isActive: true,
+    status: 'ACTIVE',
   })
     .select('id')
     .all();

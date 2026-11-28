@@ -1,67 +1,72 @@
 import { db } from '../../prisma/db.js';
 import { AppError } from '../../shared/errors/app-error.js';
+import {
+  PRODUCT_OUT_OF_STOCK_EVENT_TYPE,
+  PRODUCT_RESTOCKED_EVENT_TYPE,
+} from '../../shared/types/events/inventory.stock.events.js';
 
-interface StockDeductionItem {
-  productId: string;
-  quantity: number;
-}
+type StockEventType = typeof PRODUCT_OUT_OF_STOCK_EVENT_TYPE | typeof PRODUCT_RESTOCKED_EVENT_TYPE;
 
-interface DeductOrderStockInput {
+interface StockAdjusterInput {
   eventId: string;
-  orderId: string;
-  items: StockDeductionItem[];
+  productId: string;
+  eventType: StockEventType;
 }
 
-export async function deductOrderStock(input: DeductOrderStockInput): Promise<void> {
-  // Reject invalid input before opening a database transaction.
-  if (!input.eventId || !input.orderId || input.items.length === 0) {
+type StockAdjustmentResult = 'PROCESSED' | 'DUPLICATE';
+
+function isDuplicateEventError(error: unknown): boolean {
+  if (typeof error !== 'object' || error === null) {
+    return false;
+  }
+
+  if (!('sqlState' in error) || !('constraint' in error)) {
+    return false;
+  }
+
+  return error.sqlState === '23505' && error.constraint === 'ProcessedEvent_pkey';
+}
+
+export async function stockAdjuster(input: StockAdjusterInput): Promise<StockAdjustmentResult> {
+  if (!input.eventId || !input.productId) {
     throw new AppError({
       code: 'INVALID_STOCK_ADJUSTMENT',
-      message: 'Invalid order stock deduction input',
+      message: 'Invalid stock adjustment input',
       statusCode: 400,
     });
   }
 
-  for (const item of input.items) {
-    if (!item.productId || !Number.isInteger(item.quantity) || item.quantity <= 0) {
-      throw new AppError({
-        code: 'INVALID_STOCK_ADJUSTMENT',
-        message: `Invalid stock deduction item: ${item.productId}`,
-        statusCode: 400,
-      });
-    }
-  }
+  const statusByEventType: Record<StockEventType, 'ACTIVE' | 'INACTIVE'> = {
+    [PRODUCT_OUT_OF_STOCK_EVENT_TYPE]: 'INACTIVE',
+    [PRODUCT_RESTOCKED_EVENT_TYPE]: 'ACTIVE',
+  };
 
-  await db.transaction(async (tx) => {
-    // Register the event so it cannot deduct stock twice.
-    // A duplicate eventId will fail because it is unique.
-    await tx.orm.public.ProcessedEvent.create({
-      eventId: input.eventId,
-      eventType: 'order.confirmed',
+  const newStatus = statusByEventType[input.eventType];
+
+  try {
+    await db.transaction(async (tx) => {
+      // Insert the event ID first.
+      // The database primary key prevents the same event from being recorded twice.
+      await tx.orm.public.ProcessedEvent.create({
+        eventId: input.eventId,
+        eventType: input.eventType,
+      });
+
+      // Only update the product if the event was successfully registered.
+      await tx.orm.public.Product.where({ id: input.productId }).update({
+        status: newStatus,
+      });
     });
 
-    // Deduct stock for each item in the order.
-    for (const item of input.items) {
-      const query = tx.sql.public.Product.update((product, fns) => ({
-        stock: fns.raw`${product.stock} - ${item.quantity}`.returns('pg/int4@1'),
-      }))
-        .where((product, fns) =>
-          fns.and(fns.eq(product.id, item.productId), fns.gte(product.stock, item.quantity)),
-        )
-        .returning('id')
-        .build();
-
-      const result = await tx.query(query);
-
-      // No row updated means the product doesn't exist
-      // or there isn't enough stock available.
-      if (result.length === 0) {
-        throw new AppError({
-          code: 'INSUFFICIENT_STOCK',
-          message: `Insufficient stock or product not found: ${item.productId}`,
-          statusCode: 409,
-        });
-      }
+    return 'PROCESSED';
+  } catch (error) {
+    // Prisma unique constraint error (23505) means the event ID
+    // already exists in ProcessedEvent.
+    if (isDuplicateEventError(error)) {
+      return 'DUPLICATE';
     }
-  });
+
+    // All other errors are genuine failures and should propagate.
+    throw error;
+  }
 }

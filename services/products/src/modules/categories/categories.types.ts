@@ -21,5 +21,5 @@ export const CategoryResponseSchema = z.object({
 
 export type CategoryDetail = Scalars<Models.public_Category>;
 
-export type CategoryResponse = Omit<CategoryDetail, 'isActive' | 'updatedAt' | 'createdAt'> &
+export type CategoryResponse = Omit<CategoryDetail, 'updatedAt' | 'createdAt'> &
   z.infer<typeof CategoryResponseSchema>;

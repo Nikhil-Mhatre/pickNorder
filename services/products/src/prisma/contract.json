@@ -20,6 +20,21 @@
   "domain": {
     "namespaces": {
       "public": {
+        "enum": {
+          "ProductStatus": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "ACTIVE",
+                "value": "ACTIVE"
+              },
+              {
+                "name": "INACTIVE",
+                "value": "INACTIVE"
+              }
+            ]
+          }
+        },
         "models": {
           "Category": {
             "fields": {
@@ -44,13 +59,6 @@
                 "nullable": false,
                 "type": {
                   "codecId": "pg/text@1",
-                  "kind": "scalar"
-                }
-              },
-              "isActive": {
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/bool@1",
                   "kind": "scalar"
                 }
               },
@@ -106,9 +114,6 @@
                 },
                 "id": {
                   "column": "id"
-                },
-                "isActive": {
-                  "column": "isActive"
                 },
                 "name": {
                   "column": "name"
@@ -208,13 +213,6 @@
                   "kind": "scalar"
                 }
               },
-              "isActive": {
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/bool@1",
-                  "kind": "scalar"
-                }
-              },
               "name": {
                 "nullable": false,
                 "type": {
@@ -233,11 +231,17 @@
                   }
                 }
               },
-              "stock": {
+              "status": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/int4@1",
+                  "codecId": "pg/text@1",
                   "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "ProductStatus",
+                  "namespaceId": "public",
+                  "plane": "domain"
                 }
               },
               "updatedAt": {
@@ -286,17 +290,14 @@
                 "imageUrl": {
                   "column": "imageUrl"
                 },
-                "isActive": {
-                  "column": "isActive"
-                },
                 "name": {
                   "column": "name"
                 },
                 "price": {
                   "column": "price"
                 },
-                "stock": {
-                  "column": "stock"
+                "status": {
+                  "column": "status"
                 },
                 "updatedAt": {
                   "column": "updatedAt"
@@ -339,15 +340,6 @@
                   "dataType": "pg/text",
                   "nullable": false
                 },
-                "isActive": {
-                  "codecId": "pg/bool@1",
-                  "dataType": "pg/bool",
-                  "default": {
-                    "kind": "literal",
-                    "value": true
-                  },
-                  "nullable": false
-                },
                 "name": {
                   "codecId": "pg/text@1",
                   "dataType": "pg/text",
@@ -368,16 +360,7 @@
                 }
               },
               "foreignKeys": [],
-              "indexes": [
-                {
-                  "columns": [
-                    "isActive"
-                  ],
-                  "name": "Category_isActive_idx_77fe3ba1",
-                  "prefix": "Category_isActive_idx",
-                  "unique": false
-                }
-              ],
+              "indexes": [],
               "primaryKey": {
                 "columns": [
                   "id"
@@ -440,6 +423,13 @@
               "uniques": []
             },
             "Product": {
+              "checks": [
+                {
+                  "expression": "\"status\" IN ('ACTIVE', 'INACTIVE')",
+                  "name": "Product_status_check_ee520df2",
+                  "prefix": "Product_status_check"
+                }
+              ],
               "columns": {
                 "categoryId": {
                   "codecId": "pg/text@1",
@@ -473,15 +463,6 @@
                   "dataType": "pg/text",
                   "nullable": true
                 },
-                "isActive": {
-                  "codecId": "pg/bool@1",
-                  "dataType": "pg/bool",
-                  "default": {
-                    "kind": "literal",
-                    "value": true
-                  },
-                  "nullable": false
-                },
                 "name": {
                   "codecId": "pg/text@1",
                   "dataType": "pg/text",
@@ -496,14 +477,20 @@
                     "scale": 2
                   }
                 },
-                "stock": {
-                  "codecId": "pg/int4@1",
-                  "dataType": "pg/int4",
+                "status": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
                   "default": {
                     "kind": "literal",
-                    "value": 0
+                    "value": "ACTIVE"
                   },
-                  "nullable": false
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "ProductStatus",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
                 },
                 "updatedAt": {
                   "codecId": "pg/timestamptz-date@1",
@@ -548,23 +535,6 @@
                 },
                 {
                   "columns": [
-                    "isActive",
-                    "categoryId"
-                  ],
-                  "name": "Product_isActive_categoryId_idx_44f61b73",
-                  "prefix": "Product_isActive_categoryId_idx",
-                  "unique": false
-                },
-                {
-                  "columns": [
-                    "isActive"
-                  ],
-                  "name": "Product_isActive_idx_77fe3ba1",
-                  "prefix": "Product_isActive_idx",
-                  "unique": false
-                },
-                {
-                  "columns": [
                     "name"
                   ],
                   "name": "Product_name_idx_ce87e6ba",
@@ -578,6 +548,14 @@
                   "name": "Product_price_idx_696ad5eb",
                   "prefix": "Product_price_idx",
                   "unique": false
+                },
+                {
+                  "columns": [
+                    "status"
+                  ],
+                  "name": "Product_status_idx_e98638ab",
+                  "prefix": "Product_status_idx",
+                  "unique": false
                 }
               ],
               "primaryKey": {
@@ -587,13 +565,22 @@
               },
               "uniques": []
             }
+          },
+          "valueSet": {
+            "ProductStatus": {
+              "kind": "valueSet",
+              "values": [
+                "ACTIVE",
+                "INACTIVE"
+              ]
+            }
           }
         },
         "id": "public",
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "6d0d9ac50ff3d474c46429c35779efce1177ae7d71a0c19c8a3b8a663336df8a"
+    "storageHash": "b9d2150714e43d73272e21811b5a48af1958afdec5c8f824669d86ba4171223e"
   },
   "execution": {
     "executionHash": "598bf3a16e1cabf76f17e20ce6367cea316f86715798d1d4f8cde46cf4730631",

@@ -1,145 +1,128 @@
-// src/shared/infrastructure/kafka/kafka.consumer.ts
-
 import { kafka } from '../../config/kafka.config.js';
 import { env } from '../../config/env.js';
 import { logger } from '../../utils/logger.js';
 import {
-  ORDER_CONFIRMED_CONSUMER_GROUP,
-  ORDER_CONFIRMED_TOPIC,
-} from '../../types/events/order-confirmed.event.js';
-import { handleOrderConfirmed } from '../../../modules/inventory/order-confirmed.handler.js';
+  INVENTORY_STOCK_TOPIC,
+  INVENTORY_STOCK_CONSUMER_GROUP,
+  INVENTORY_STOCK_PRODUCER,
+  PRODUCT_OUT_OF_STOCK_EVENT_TYPE,
+  PRODUCT_RESTOCKED_EVENT_TYPE,
+  type InventoryStockEvent,
+} from '../../types/events/inventory.stock.events.js';
+import { handleStock } from '../../../modules/inventory/stock-handlers.js';
 
 const consumer = kafka.consumer({
-  groupId: ORDER_CONFIRMED_CONSUMER_GROUP,
+  groupId: INVENTORY_STOCK_CONSUMER_GROUP,
 });
 
 let isConnected = false;
 
-/**
- * Processes a single Kafka message.
- */
-async function processMessage({
-  topic,
-  partition,
-  message,
-}: {
-  topic: string;
-  partition: number;
-  message: {
-    offset: string;
-    key: Buffer | null;
-    value: Buffer | null;
-  };
-}): Promise<void> {
-  const messageContext = {
-    topic,
-    partition,
-    offset: message.offset,
-    key: message.key?.toString(),
-  };
+function isInventoryStockEvent(event: any): event is InventoryStockEvent {
+  return (
+    event &&
+    typeof event.eventId === 'string' &&
+    (event.eventType === PRODUCT_OUT_OF_STOCK_EVENT_TYPE ||
+      event.eventType === PRODUCT_RESTOCKED_EVENT_TYPE) &&
+    event.eventVersion === 1 &&
+    typeof event.occurredAt === 'string' &&
+    event.producer === INVENTORY_STOCK_PRODUCER &&
+    event.data &&
+    typeof event.data.productId === 'string' &&
+    typeof event.data.productName === 'string'
+  );
+}
 
-  // A Kafka message must contain a value.
-  if (!message.value) {
-    throw new Error('Kafka message value is empty');
+async function processMessage(
+  topic: string,
+  partition: number,
+  offset: string,
+  messageValue: Buffer | null,
+): Promise<void> {
+  const context = { topic, partition, offset };
+
+  // 1. Check if the message has a value.
+  if (!messageValue) {
+    logger.warn(context, 'Kafka message is empty; skipping');
+    return;
   }
 
-  const messageValue = message.value.toString();
-
-  // Parse the JSON separately so parsing errors are not confused
-  // with inventory processing errors.
-  let event;
+  // 2. Convert the message from JSON string to an object.
+  let event: unknown;
 
   try {
-    event = JSON.parse(messageValue);
+    event = JSON.parse(messageValue.toString());
   } catch (error) {
-    logger.error(
-      {
-        err: error,
-        ...messageContext,
-      },
-      'Invalid JSON in Kafka message',
-    );
-
-    throw error;
+    logger.warn({ err: error, ...context }, 'Invalid Kafka JSON; skipping');
+    return;
   }
 
-  logger.info(messageContext, 'Processing Kafka message');
+  // 3. Validate the event structure.
+  if (!isInventoryStockEvent(event)) {
+    logger.warn(context, 'Invalid inventory event; skipping');
+    return;
+  }
 
-  // Process the event.
-  // If this fails, propagate the error so KafkaJS can handle
-  // the failed message instead of treating it as successful.
-  try {
-    await handleOrderConfirmed(event);
+  // 4. Route the event to the appropriate handler.
+  if (topic !== INVENTORY_STOCK_TOPIC) {
+    logger.warn({ ...context, topic }, 'Unexpected Kafka topic; skipping');
+    return;
+  }
 
-    logger.info(messageContext, 'Kafka message processed successfully');
-  } catch (error) {
-    logger.error(
-      {
-        err: error,
-        ...messageContext,
-      },
-      'Failed to process Kafka message',
-    );
+  switch (event.eventType) {
+    case PRODUCT_OUT_OF_STOCK_EVENT_TYPE:
+    case PRODUCT_RESTOCKED_EVENT_TYPE:
+      logger.info(
+        { ...context, eventId: event.eventId, eventType: event.eventType },
+        'Processing inventory event',
+      );
 
-    throw error;
+      await handleStock(event);
+
+      logger.info(
+        { ...context, eventId: event.eventId, eventType: event.eventType },
+        'Inventory event processed',
+      );
+      break;
   }
 }
 
-/**
- * Connects the consumer, subscribes to the order-confirmed topic,
- * and starts processing messages.
- */
 export async function startKafkaConsumer(): Promise<void> {
   if (!env.KAFKA_ENABLED) {
-    logger.info('Kafka is disabled. Consumer startup skipped.');
+    logger.info('Kafka is disabled; consumer startup skipped');
     return;
   }
 
   if (isConnected) {
-    logger.info('Kafka consumer is already connected.');
+    logger.info('Kafka consumer is already running');
     return;
   }
 
   try {
-    logger.info(
-      {
-        topic: ORDER_CONFIRMED_TOPIC,
-        groupId: ORDER_CONFIRMED_CONSUMER_GROUP,
-      },
-      'Starting Kafka consumer',
-    );
+    logger.info('Starting Kafka consumer');
 
     await consumer.connect();
     isConnected = true;
 
     await consumer.subscribe({
-      topic: ORDER_CONFIRMED_TOPIC,
+      topic: INVENTORY_STOCK_TOPIC,
       fromBeginning: false,
     });
 
     await consumer.run({
       eachMessage: async ({ topic, partition, message }) => {
-        await processMessage({
-          topic,
-          partition,
-          message,
-        });
+        await processMessage(topic, partition, message.offset, message.value);
       },
     });
 
-    logger.info({ topic: ORDER_CONFIRMED_TOPIC }, 'Kafka consumer started successfully');
+    logger.info('Kafka consumer started');
   } catch (error) {
     logger.error({ err: error }, 'Kafka consumer startup failed');
 
-    await cleanupConsumer();
-
+    await stopKafkaConsumer();
     throw error;
   }
 }
 
-/**
- * Disconnects the consumer safely.
- */
 export async function stopKafkaConsumer(): Promise<void> {
   if (!env.KAFKA_ENABLED || !isConnected) {
     return;
@@ -147,21 +130,9 @@ export async function stopKafkaConsumer(): Promise<void> {
 
   logger.info('Stopping Kafka consumer');
 
-  await cleanupConsumer();
-
-  logger.info('Kafka consumer stopped');
-}
-
-/**
- * Disconnects the consumer and resets its connection state.
- */
-async function cleanupConsumer(): Promise<void> {
-  if (!isConnected) {
-    return;
-  }
-
   try {
     await consumer.disconnect();
+    logger.info('Kafka consumer stopped');
   } finally {
     isConnected = false;
   }

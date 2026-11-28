@@ -45,7 +45,7 @@
     "execute": [
       {
         "description": "create table \"Category\"",
-        "sql": "CREATE TABLE \"public\".\"Category\" (\n  \"createdAt\" timestamptz(3) DEFAULT (now()) NOT NULL,\n  \"description\" text,\n  \"id\" text NOT NULL,\n  \"isActive\" bool DEFAULT true NOT NULL,\n  \"name\" text NOT NULL,\n  \"slug\" text NOT NULL,\n  \"updatedAt\" timestamptz(3) NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "sql": "CREATE TABLE \"public\".\"Category\" (\n  \"createdAt\" timestamptz(3) DEFAULT (now()) NOT NULL,\n  \"description\" text,\n  \"id\" text NOT NULL,\n  \"name\" text NOT NULL,\n  \"slug\" text NOT NULL,\n  \"updatedAt\" timestamptz(3) NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
         "params": []
       }
     ],
@@ -94,7 +94,7 @@
     "execute": [
       {
         "description": "create table \"Product\"",
-        "sql": "CREATE TABLE \"public\".\"Product\" (\n  \"categoryId\" text NOT NULL,\n  \"createdAt\" timestamptz(3) DEFAULT (now()) NOT NULL,\n  \"description\" text,\n  \"id\" text NOT NULL,\n  \"imageUrl\" text,\n  \"isActive\" bool DEFAULT true NOT NULL,\n  \"name\" text NOT NULL,\n  \"price\" numeric(10,2) NOT NULL,\n  \"stock\" int4 DEFAULT 0 NOT NULL,\n  \"updatedAt\" timestamptz(3) NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "sql": "CREATE TABLE \"public\".\"Product\" (\n  \"categoryId\" text NOT NULL,\n  \"createdAt\" timestamptz(3) DEFAULT (now()) NOT NULL,\n  \"description\" text,\n  \"id\" text NOT NULL,\n  \"imageUrl\" text,\n  \"name\" text NOT NULL,\n  \"price\" numeric(10,2) NOT NULL,\n  \"status\" text DEFAULT 'ACTIVE' NOT NULL,\n  \"updatedAt\" timestamptz(3) NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"Product_status_check_ee520df2\" CHECK (\"status\" IN ('ACTIVE', 'INACTIVE'))\n)",
         "params": []
       }
     ],
@@ -211,54 +211,6 @@
     ]
   },
   {
-    "id": "index.Category.Category_isActive_idx_77fe3ba1",
-    "label": "Create index \"Category_isActive_idx_77fe3ba1\" on \"Category\"",
-    "operationClass": "additive",
-    "target": {
-      "id": "postgres",
-      "details": {
-        "schema": "public",
-        "objectType": "index",
-        "name": "Category_isActive_idx_77fe3ba1",
-        "table": "Category"
-      }
-    },
-    "precheck": [
-      {
-        "description": "ensure index \"Category_isActive_idx_77fe3ba1\" does not exist",
-        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
-        "params": [
-          "\"public\".\"Category_isActive_idx_77fe3ba1\""
-        ],
-        "expectation": {
-          "expects": "absent",
-          "object": "index \"Category_isActive_idx_77fe3ba1\""
-        }
-      }
-    ],
-    "execute": [
-      {
-        "description": "create index \"Category_isActive_idx_77fe3ba1\"",
-        "sql": "CREATE INDEX \"Category_isActive_idx_77fe3ba1\" ON \"public\".\"Category\" (\"isActive\")",
-        "params": []
-      }
-    ],
-    "postcheck": [
-      {
-        "description": "verify index \"Category_isActive_idx_77fe3ba1\" exists on \"Category\" with the planned definition",
-        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_index\" AS \"i\" ON \"i\".\"indexrelid\" = \"c\".\"oid\" INNER JOIN \"pg_am\" AS \"m\" ON \"m\".\"oid\" = \"c\".\"relam\" WHERE (\"c\".\"oid\" = to_regclass($1) AND (\"c\".\"relkind\" = $2 OR \"c\".\"relkind\" = $3) AND \"i\".\"indrelid\" = to_regclass($4) AND NOT (\"i\".\"indisunique\") AND \"m\".\"amname\" = $5 AND (\"i\".\"indexprs\" IS NULL AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"i\".\"indkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"i\".\"indrelid\" AND key_attribute.attnum = key_column.attnum) = ($6)::jsonb) AND \"i\".\"indpred\" IS NULL)) AS \"result\"",
-        "params": [
-          "\"public\".\"Category_isActive_idx_77fe3ba1\"",
-          "i",
-          "I",
-          "\"public\".\"Category\"",
-          "btree",
-          "[\"isActive\"]"
-        ]
-      }
-    ]
-  },
-  {
     "id": "index.Product.Product_categoryId_idx_15c304f2",
     "label": "Create index \"Product_categoryId_idx_15c304f2\" on \"Product\"",
     "operationClass": "additive",
@@ -302,102 +254,6 @@
           "\"public\".\"Product\"",
           "btree",
           "[\"categoryId\"]"
-        ]
-      }
-    ]
-  },
-  {
-    "id": "index.Product.Product_isActive_categoryId_idx_44f61b73",
-    "label": "Create index \"Product_isActive_categoryId_idx_44f61b73\" on \"Product\"",
-    "operationClass": "additive",
-    "target": {
-      "id": "postgres",
-      "details": {
-        "schema": "public",
-        "objectType": "index",
-        "name": "Product_isActive_categoryId_idx_44f61b73",
-        "table": "Product"
-      }
-    },
-    "precheck": [
-      {
-        "description": "ensure index \"Product_isActive_categoryId_idx_44f61b73\" does not exist",
-        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
-        "params": [
-          "\"public\".\"Product_isActive_categoryId_idx_44f61b73\""
-        ],
-        "expectation": {
-          "expects": "absent",
-          "object": "index \"Product_isActive_categoryId_idx_44f61b73\""
-        }
-      }
-    ],
-    "execute": [
-      {
-        "description": "create index \"Product_isActive_categoryId_idx_44f61b73\"",
-        "sql": "CREATE INDEX \"Product_isActive_categoryId_idx_44f61b73\" ON \"public\".\"Product\" (\"isActive\", \"categoryId\")",
-        "params": []
-      }
-    ],
-    "postcheck": [
-      {
-        "description": "verify index \"Product_isActive_categoryId_idx_44f61b73\" exists on \"Product\" with the planned definition",
-        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_index\" AS \"i\" ON \"i\".\"indexrelid\" = \"c\".\"oid\" INNER JOIN \"pg_am\" AS \"m\" ON \"m\".\"oid\" = \"c\".\"relam\" WHERE (\"c\".\"oid\" = to_regclass($1) AND (\"c\".\"relkind\" = $2 OR \"c\".\"relkind\" = $3) AND \"i\".\"indrelid\" = to_regclass($4) AND NOT (\"i\".\"indisunique\") AND \"m\".\"amname\" = $5 AND (\"i\".\"indexprs\" IS NULL AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"i\".\"indkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"i\".\"indrelid\" AND key_attribute.attnum = key_column.attnum) = ($6)::jsonb) AND \"i\".\"indpred\" IS NULL)) AS \"result\"",
-        "params": [
-          "\"public\".\"Product_isActive_categoryId_idx_44f61b73\"",
-          "i",
-          "I",
-          "\"public\".\"Product\"",
-          "btree",
-          "[\"isActive\",\"categoryId\"]"
-        ]
-      }
-    ]
-  },
-  {
-    "id": "index.Product.Product_isActive_idx_77fe3ba1",
-    "label": "Create index \"Product_isActive_idx_77fe3ba1\" on \"Product\"",
-    "operationClass": "additive",
-    "target": {
-      "id": "postgres",
-      "details": {
-        "schema": "public",
-        "objectType": "index",
-        "name": "Product_isActive_idx_77fe3ba1",
-        "table": "Product"
-      }
-    },
-    "precheck": [
-      {
-        "description": "ensure index \"Product_isActive_idx_77fe3ba1\" does not exist",
-        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
-        "params": [
-          "\"public\".\"Product_isActive_idx_77fe3ba1\""
-        ],
-        "expectation": {
-          "expects": "absent",
-          "object": "index \"Product_isActive_idx_77fe3ba1\""
-        }
-      }
-    ],
-    "execute": [
-      {
-        "description": "create index \"Product_isActive_idx_77fe3ba1\"",
-        "sql": "CREATE INDEX \"Product_isActive_idx_77fe3ba1\" ON \"public\".\"Product\" (\"isActive\")",
-        "params": []
-      }
-    ],
-    "postcheck": [
-      {
-        "description": "verify index \"Product_isActive_idx_77fe3ba1\" exists on \"Product\" with the planned definition",
-        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_index\" AS \"i\" ON \"i\".\"indexrelid\" = \"c\".\"oid\" INNER JOIN \"pg_am\" AS \"m\" ON \"m\".\"oid\" = \"c\".\"relam\" WHERE (\"c\".\"oid\" = to_regclass($1) AND (\"c\".\"relkind\" = $2 OR \"c\".\"relkind\" = $3) AND \"i\".\"indrelid\" = to_regclass($4) AND NOT (\"i\".\"indisunique\") AND \"m\".\"amname\" = $5 AND (\"i\".\"indexprs\" IS NULL AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"i\".\"indkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"i\".\"indrelid\" AND key_attribute.attnum = key_column.attnum) = ($6)::jsonb) AND \"i\".\"indpred\" IS NULL)) AS \"result\"",
-        "params": [
-          "\"public\".\"Product_isActive_idx_77fe3ba1\"",
-          "i",
-          "I",
-          "\"public\".\"Product\"",
-          "btree",
-          "[\"isActive\"]"
         ]
       }
     ]
@@ -494,6 +350,54 @@
           "\"public\".\"Product\"",
           "btree",
           "[\"price\"]"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.Product.Product_status_idx_e98638ab",
+    "label": "Create index \"Product_status_idx_e98638ab\" on \"Product\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "Product_status_idx_e98638ab",
+        "table": "Product"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"Product_status_idx_e98638ab\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Product_status_idx_e98638ab\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "index \"Product_status_idx_e98638ab\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"Product_status_idx_e98638ab\"",
+        "sql": "CREATE INDEX \"Product_status_idx_e98638ab\" ON \"public\".\"Product\" (\"status\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"Product_status_idx_e98638ab\" exists on \"Product\" with the planned definition",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_index\" AS \"i\" ON \"i\".\"indexrelid\" = \"c\".\"oid\" INNER JOIN \"pg_am\" AS \"m\" ON \"m\".\"oid\" = \"c\".\"relam\" WHERE (\"c\".\"oid\" = to_regclass($1) AND (\"c\".\"relkind\" = $2 OR \"c\".\"relkind\" = $3) AND \"i\".\"indrelid\" = to_regclass($4) AND NOT (\"i\".\"indisunique\") AND \"m\".\"amname\" = $5 AND (\"i\".\"indexprs\" IS NULL AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"i\".\"indkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"i\".\"indrelid\" AND key_attribute.attnum = key_column.attnum) = ($6)::jsonb) AND \"i\".\"indpred\" IS NULL)) AS \"result\"",
+        "params": [
+          "\"public\".\"Product_status_idx_e98638ab\"",
+          "i",
+          "I",
+          "\"public\".\"Product\"",
+          "btree",
+          "[\"status\"]"
         ]
       }
     ]

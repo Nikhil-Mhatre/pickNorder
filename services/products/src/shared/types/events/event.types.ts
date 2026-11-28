@@ -1,18 +1,32 @@
 /**
  * Common structure for all pickNorder Kafka events.
  *
- * The generic type TData represents the event-specific payload.
+ * @template TData - Represents the event-specific payload.
+ * @template TEventType - Represents the event name (string literal).
+ * @template TEventVersion - Represents the event schema version (number literal).
+ *
+ * @example
+ * ```ts
+ * type ProductOutOfStockEvent = EventEnvelope<
+ *   InventoryStockData,
+ *   typeof PRODUCT_OUT_OF_STOCK_EVENT_TYPE,
+ *   1
+ * >;
+ * ```
  */
-export interface EventEnvelope<TData> {
-  // Unique event identifier.
-  // Used to prevent processing the same event more than once.
+export interface EventEnvelope<
+  TData,
+  TEventType extends string = string,
+  TEventVersion extends number = number,
+> {
+  // Unique event identifier used for idempotent processing.
   eventId: string;
 
   // Business event name.
-  eventType: string;
+  eventType: TEventType;
 
   // Schema version of this event.
-  eventVersion: number;
+  eventVersion: TEventVersion;
 
   // Timestamp when the business event occurred (ISO 8601).
   occurredAt: string;
@@ -20,7 +34,7 @@ export interface EventEnvelope<TData> {
   // Service that produced the event.
   producer: string;
 
-  // Event-specific data.
+  // Event-specific payload.
   data: TData;
 }
 

@@ -26,7 +26,7 @@ export const ListProductsSchema = z.object({
 
 export type ProductDetail = Scalars<Models.public_Product>;
 export type CategoryDetail = Scalars<Models.public_Category>;
-export type GetProductByIdOutputSchema = Omit<ProductDetail, 'isActive' | 'categoryId'> & {
+export type GetProductByIdOutputSchema = Omit<ProductDetail, 'status' | 'categoryId'> & {
   category: Pick<CategoryDetail, 'id' | 'name' | 'slug'>;
 };
 export type GetProductByIdInputSchema = z.infer<typeof GetProductByIdSchema>;

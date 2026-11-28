@@ -23,7 +23,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'6d0d9ac50ff3d474c46429c35779efce1177ae7d71a0c19c8a3b8a663336df8a'>;
+  StorageHashBase<'b9d2150714e43d73272e21811b5a48af1958afdec5c8f824669d86ba4171223e'>;
 export type ExecutionHash =
   ExecutionHashBase<'598bf3a16e1cabf76f17e20ce6367cea316f86715798d1d4f8cde46cf4730631'>;
 export type ProfileHash =
@@ -275,7 +275,18 @@ type DefaultLiteralValue<CodecId extends string, Encoded> = CodecId extends keyo
   : Encoded;
 type ParameterizedOutputTypeFunctions = PgParameterizedOutputTypes;
 
-type FieldTypeOverrides = {};
+type FieldTypeOverrides = {
+  readonly public: {
+    readonly models: {
+      readonly Product: {
+        readonly status: {
+          readonly output: 'ACTIVE' | 'INACTIVE';
+          readonly input: 'ACTIVE' | 'INACTIVE';
+        };
+      };
+    };
+  };
+};
 export type FieldOutputTypes = FieldTypesFromDomain<
   ContractBase['domain']['namespaces'],
   CodecTypes,
@@ -292,7 +303,16 @@ export type FieldInputTypes = FieldTypesFromDomain<
   'input',
   ContractBase['storage']['namespaces']
 >;
-type ColumnTypeOverrides = {};
+type ColumnTypeOverrides = {
+  readonly public: {
+    readonly Product: {
+      readonly status: {
+        readonly output: 'ACTIVE' | 'INACTIVE';
+        readonly input: 'ACTIVE' | 'INACTIVE';
+      };
+    };
+  };
+};
 export type StorageColumnTypes = ColumnTypesFromStorage<
   ContractBase['storage'],
   CodecTypes,
@@ -313,7 +333,6 @@ export namespace Models {
     createdAt: FieldOutputTypes['public']['Category']['createdAt'];
     description: FieldOutputTypes['public']['Category']['description'];
     id: FieldOutputTypes['public']['Category']['id'];
-    isActive: FieldOutputTypes['public']['Category']['isActive'];
     name: FieldOutputTypes['public']['Category']['name'];
     slug: FieldOutputTypes['public']['Category']['slug'];
     updatedAt: FieldOutputTypes['public']['Category']['updatedAt'];
@@ -332,10 +351,9 @@ export namespace Models {
     description: FieldOutputTypes['public']['Product']['description'];
     id: FieldOutputTypes['public']['Product']['id'];
     imageUrl: FieldOutputTypes['public']['Product']['imageUrl'];
-    isActive: FieldOutputTypes['public']['Product']['isActive'];
     name: FieldOutputTypes['public']['Product']['name'];
     price: FieldOutputTypes['public']['Product']['price'];
-    stock: FieldOutputTypes['public']['Product']['stock'];
+    status: FieldOutputTypes['public']['Product']['status'];
     updatedAt: FieldOutputTypes['public']['Product']['updatedAt'];
     category: public_Category;
     readonly [RelationKeys]?: 'category';
@@ -390,16 +408,6 @@ type ContractBase = Omit<
                   readonly nullable: false;
                   readonly many: false;
                 };
-                readonly isActive: {
-                  readonly dataType: 'pg/bool';
-                  readonly codecId: 'pg/bool@1';
-                  readonly nullable: false;
-                  readonly default: {
-                    readonly kind: 'literal';
-                    readonly value: DefaultLiteralValue<'pg/bool@1', true>;
-                  };
-                  readonly many: false;
-                };
                 readonly name: {
                   readonly dataType: 'pg/text';
                   readonly codecId: 'pg/text@1';
@@ -425,14 +433,7 @@ type ContractBase = Omit<
                 { readonly columns: readonly ['name'] },
                 { readonly columns: readonly ['slug'] },
               ];
-              indexes: readonly [
-                {
-                  readonly name: 'Category_isActive_idx_77fe3ba1';
-                  readonly prefix: 'Category_isActive_idx';
-                  readonly columns: readonly ['isActive'];
-                  readonly unique: false;
-                },
-              ];
+              indexes: readonly [];
               foreignKeys: readonly [];
             };
             readonly ProcessedEvent: {
@@ -504,16 +505,6 @@ type ContractBase = Omit<
                   readonly nullable: true;
                   readonly many: false;
                 };
-                readonly isActive: {
-                  readonly dataType: 'pg/bool';
-                  readonly codecId: 'pg/bool@1';
-                  readonly nullable: false;
-                  readonly default: {
-                    readonly kind: 'literal';
-                    readonly value: DefaultLiteralValue<'pg/bool@1', true>;
-                  };
-                  readonly many: false;
-                };
                 readonly name: {
                   readonly dataType: 'pg/text';
                   readonly codecId: 'pg/text@1';
@@ -527,13 +518,13 @@ type ContractBase = Omit<
                   readonly typeParams: { readonly precision: 10; readonly scale: 2 };
                   readonly many: false;
                 };
-                readonly stock: {
-                  readonly dataType: 'pg/int4';
-                  readonly codecId: 'pg/int4@1';
+                readonly status: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
                   readonly nullable: false;
                   readonly default: {
                     readonly kind: 'literal';
-                    readonly value: DefaultLiteralValue<'pg/int4@1', 0>;
+                    readonly value: DefaultLiteralValue<'pg/text@1', 'ACTIVE'>;
                   };
                   readonly many: false;
                 };
@@ -555,18 +546,6 @@ type ContractBase = Omit<
                   readonly unique: false;
                 },
                 {
-                  readonly name: 'Product_isActive_categoryId_idx_44f61b73';
-                  readonly prefix: 'Product_isActive_categoryId_idx';
-                  readonly columns: readonly ['isActive', 'categoryId'];
-                  readonly unique: false;
-                },
-                {
-                  readonly name: 'Product_isActive_idx_77fe3ba1';
-                  readonly prefix: 'Product_isActive_idx';
-                  readonly columns: readonly ['isActive'];
-                  readonly unique: false;
-                },
-                {
                   readonly name: 'Product_name_idx_ce87e6ba';
                   readonly prefix: 'Product_name_idx';
                   readonly columns: readonly ['name'];
@@ -576,6 +555,12 @@ type ContractBase = Omit<
                   readonly name: 'Product_price_idx_696ad5eb';
                   readonly prefix: 'Product_price_idx';
                   readonly columns: readonly ['price'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'Product_status_idx_e98638ab';
+                  readonly prefix: 'Product_status_idx';
+                  readonly columns: readonly ['status'];
                   readonly unique: false;
                 },
               ];
@@ -593,6 +578,12 @@ type ContractBase = Omit<
                   };
                 },
               ];
+            };
+          };
+          readonly valueSet: {
+            readonly ProductStatus: {
+              readonly kind: 'valueSet';
+              readonly values: readonly ['ACTIVE', 'INACTIVE'];
             };
           };
         };
@@ -634,10 +625,6 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
-              readonly isActive: {
-                readonly nullable: false;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/bool@1' };
-              };
               readonly name: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
@@ -675,7 +662,6 @@ type ContractBase = Omit<
                 readonly createdAt: { readonly column: 'createdAt' };
                 readonly description: { readonly column: 'description' };
                 readonly id: { readonly column: 'id' };
-                readonly isActive: { readonly column: 'isActive' };
                 readonly name: { readonly column: 'name' };
                 readonly slug: { readonly column: 'slug' };
                 readonly updatedAt: { readonly column: 'updatedAt' };
@@ -738,10 +724,6 @@ type ContractBase = Omit<
                 readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
-              readonly isActive: {
-                readonly nullable: false;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/bool@1' };
-              };
               readonly name: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
@@ -754,9 +736,9 @@ type ContractBase = Omit<
                   readonly typeParams: { readonly precision: 10; readonly scale: 2 };
                 };
               };
-              readonly stock: {
+              readonly status: {
                 readonly nullable: false;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
               readonly updatedAt: {
                 readonly nullable: false;
@@ -790,14 +772,28 @@ type ContractBase = Omit<
                 readonly description: { readonly column: 'description' };
                 readonly id: { readonly column: 'id' };
                 readonly imageUrl: { readonly column: 'imageUrl' };
-                readonly isActive: { readonly column: 'isActive' };
                 readonly name: { readonly column: 'name' };
                 readonly price: { readonly column: 'price' };
-                readonly stock: { readonly column: 'stock' };
+                readonly status: { readonly column: 'status' };
                 readonly updatedAt: { readonly column: 'updatedAt' };
               };
             };
           };
+        };
+        readonly enum: {
+          readonly ProductStatus: {
+            readonly codecId: 'pg/text@1';
+            readonly members: readonly [
+              { readonly name: 'ACTIVE'; readonly value: 'ACTIVE' },
+              { readonly name: 'INACTIVE'; readonly value: 'INACTIVE' },
+            ];
+          };
+        };
+        readonly enumMemberTypes?: {
+          readonly ProductStatus: readonly [
+            { readonly name: 'ACTIVE'; readonly value: 'ACTIVE' },
+            { readonly name: 'INACTIVE'; readonly value: 'INACTIVE' },
+          ];
         };
       };
     };
